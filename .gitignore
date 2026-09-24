@@ -1,0 +1,38 @@
+# Enviroment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__
+*.py[cod]
+*.pyo
+
+# Python test and coverage files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and temparary files
+*.log
+*.tmp
+*.temp
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# Operating system files
+.DS_store
+Thumbs.db
+
+# Build and distribution files
+build/
+
+# Docker
+*.pid
