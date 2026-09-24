@@ -120,10 +120,15 @@ To configure a service:
 3. Provide the required local configuration values.
 4. Keep credentials and other sensitive information only in the local `.env` file.
 
-Example:
+For Windows using PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+For Linux/macOS:
 
 ```bash
-cd svc-management
 cp .env.example .env
 ```
 
