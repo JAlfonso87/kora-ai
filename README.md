@@ -62,10 +62,16 @@ The same process should be followed for the other Python-based services when the
 
 ### 4\. Activate the virtual environment
 
-On Windows:
+On Windows CMD:
 
-```bash
-.venv\\Scripts\\activate
+```cmd
+.venv\\\\Scripts\\\\activate
+```
+
+On Windows PowerShell:
+
+```powershell
+.venv\\\\Scripts\\\\Activate.ps1
 ```
 
 On Linux/macOS:
@@ -77,6 +83,26 @@ source .venv/bin/activate
 ### 5\. Configure the environment
 
 Each service contains its own `.env.example` file. Create the corresponding `.env` file based on the provided example.
+
+On Windows CMD:
+
+```cmd
+copy .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+On Linux/macOS:
+
+```bash
+cp .env.example .env
+```
+
+Provide the required local configuration values in the `.env` file.
 
 Do not commit `.env` files or real credentials to the repository.
 
@@ -120,18 +146,6 @@ To configure a service:
 3. Provide the required local configuration values.
 4. Keep credentials and other sensitive information only in the local `.env` file.
 
-For Windows using PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-For Linux/macOS:
-
-```bash
-cp .env.example .env
-```
-
 The same process applies to the other services that contain an `.env.example` file.
 
 ### Security
@@ -150,7 +164,7 @@ Once the local execution environment is available, this section will include the
 
 ## Development Guidelines
 
-Development and collaboration conventions are documented in `CONTRIBUTING.md`.
+Development and collaboration conventions are documented in [`CONTRIBUTING.md`](https://github.com/JAlfonso87/kora-ai/blob/main/CONTRIBUTING.md).
 
 All contributors should review this document before starting development.
 
