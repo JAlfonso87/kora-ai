@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 
-from app.models import AgentRequest, AgentResponse
-from app.services.llm_service import generate_response
+from models import AgentRequest, AgentResponse
+from services.llm_service import generate_response
 
 
 app = FastAPI(

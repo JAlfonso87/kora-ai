@@ -1,8 +1,9 @@
 from pydantic import BaseModel, field_validator
-
+from nutritional_context import NutritionalContext
 
 class AgentRequest(BaseModel):
     message: str
+    nutriotionalContext: NutritionalContext | None = None
 
     @field_validator("message")
     @classmethod
