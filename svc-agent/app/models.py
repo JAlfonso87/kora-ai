@@ -3,7 +3,7 @@ from nutritional_context import NutritionalContext
 
 class AgentRequest(BaseModel):
     message: str
-    nutriotionalContext: NutritionalContext | None = None
+    nutritional_context: NutritionalContext | None = None
 
     @field_validator("message")
     @classmethod

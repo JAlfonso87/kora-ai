@@ -73,9 +73,9 @@ class Restrictions(BaseModel):
     )
 
 class NutritionalContext(BaseModel):
-    userProfile = UserProfile
+    user_profile = UserProfile
     goals = Goals
-    currentConsumption = CurrentConsumption
-    remainingNutrients = RemainingNutrients
+    current_consumption = CurrentConsumption
+    remaining_nutrients = RemainingNutrients
     preferences = Preferences
     restrictions = Restrictions
