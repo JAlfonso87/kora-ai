@@ -1,0 +1,38 @@
+services:
+  
+  postgres:
+    image: postgres:16
+    env_file:
+      - .env.postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kora-ai
+
+  svc-management:
+    build:
+      context: ./svc-management
+    env_file:
+      - ./svc-management/.env
+    ports:
+      - "8001:8000"
+    networks:
+      - kora-ai
+
+  svc-agent:
+    build:
+      context: ./svc-agent
+    env_file:
+      - ./svc-agent/.env
+    ports:
+      - "8000:8000"
+    networks:
+      - kora-ai
+
+volumes:
+  postgres_data:
+
+networks:
+  kora-ai:
