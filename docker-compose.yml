@@ -1,5 +1,4 @@
 services:
-  
   postgres:
     image: postgres:16
     env_file:
@@ -11,15 +10,15 @@ services:
     networks:
       - kora-ai
 
-  svc-management:
-    build:
-      context: ./svc-management
-    env_file:
-      - ./svc-management/.env
-    ports:
-      - "8001:8000"
-    networks:
-      - kora-ai
+  #svc-management:
+  # build:
+  #    context: ./svc-management
+  # env_file:
+  #    - ./svc-management/.env
+  #  ports:
+  #    - "8001:8000"
+  #  networks:
+  #    - kora-ai
 
   svc-agent:
     build:
