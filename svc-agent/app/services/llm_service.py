@@ -2,13 +2,16 @@ from dotenv import load_dotenv
 import os
 import uuid
 
-from groq import Groq
+from langchain_groq import ChatGroq
 
 from app.services.memory import get_history, add_message
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("LLM_API_KEY"))
+llm = ChatGroq(
+    api_key=os.getenv("LLM_API_KEY"),
+    model=os.getenv("LLM_MODEL")
+)
 
 SYSTEM_PROMPT = (
     "Eres Kora AI, un asistente especializado en nutrición. "
@@ -64,12 +67,9 @@ def generate_response(
 
     messages.append({"role": "user", "content": message})
 
-    response = client.chat.completions.create(
-        model=os.getenv("LLM_MODEL"),
-        messages=messages,
-    )
+    response = llm.invoke(messages)
 
-    assistant_content = response.choices[0].message.content or ""
+    assistant_content = response.content or ""
 
     add_message(session_id, "user", message)
     add_message(session_id, "assistant", assistant_content)
