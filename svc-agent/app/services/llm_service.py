@@ -32,6 +32,7 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
     ]
 )
 
+chain = PROMPT_TEMPLATE | llm
 
 def _build_context_text(nutritional_context) -> str:
     """Convierte el contexto nutricional en texto legible para el LLM."""
@@ -69,15 +70,13 @@ def generate_response(
 
     context_text = _build_context_text(nutritional_context)
 
-    prompt = PROMPT_TEMPLATE.invoke(
+    response = chain.invoke(
         {
             "message": message,
             "nutritional_context": context_text,
             "history": history,
         }
     )
-
-    response = llm.invoke(prompt)
 
     assistant_content = response.content or ""
 
