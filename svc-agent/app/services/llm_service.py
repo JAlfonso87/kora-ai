@@ -3,6 +3,7 @@ import os
 import uuid
 
 from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from app.services.memory import get_history, add_message
 
@@ -20,6 +21,15 @@ SYSTEM_PROMPT = (
     "Do not invent or assume information that has not been provided. "
     "Generate a clear, relevant, and concise response based on the available context. "
     "Do not provide medical diagnoses or complete diet plans."
+)
+
+PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
+    [
+        ("system", SYSTEM_PROMPT),
+        ("system", "Nutritional context:\n{nutritional_context}"),
+        MessagesPlaceholder(variable_name="history"),
+        ("human", "{message}"),
+    ]
 )
 
 
@@ -57,19 +67,17 @@ def generate_response(
 
     history = get_history(session_id)
 
-    messages: list[dict[str, str]] = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-    ]
-
     context_text = _build_context_text(nutritional_context)
-    if context_text:
-        messages.append({"role": "system", "content": context_text})
 
-    messages.extend(history)
+    prompt = PROMPT_TEMPLATE.invoke(
+        {
+            "message": message,
+            "nutritional_context": context_text,
+            "history": history,
+        }
+    )
 
-    messages.append({"role": "user", "content": message})
-
-    response = llm.invoke(messages)
+    response = llm.invoke(prompt)
 
     assistant_content = response.content or ""
 
