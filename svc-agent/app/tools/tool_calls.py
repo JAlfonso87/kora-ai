@@ -14,7 +14,7 @@ groq_tools = [
             ),
             "parameters":
                 ProteinQueryRequirements.model_json_schema()
-        }
+        } 
     },
     {
         "type": "function",

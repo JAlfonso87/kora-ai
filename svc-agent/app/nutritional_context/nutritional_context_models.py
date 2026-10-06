@@ -7,7 +7,7 @@ class UserProfile(BaseModel):
         default=None,
         gt=0,
         description="User's age expressed in years.",
-    )
+    ) 
     sex: Literal["male", "female"] | None = Field(
         default=None,
         description="User's biological sex.",

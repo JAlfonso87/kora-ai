@@ -1,7 +1,5 @@
 from dotenv import load_dotenv
-import json
-import os
-import uuid
+import json, os, uuid
 
 from langchain_groq import ChatGroq
 from langchain_core.messages import ToolMessage
@@ -10,11 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.services.memory import get_history, add_message
 from app.tools.tool_calls import groq_tools
 from app.tools.tool_handler import handle_tool_call
-from app.nutritional_context.nutritional_context_management import (
-    get_context,
-    save_context,
-)
-
+from app.nutritional_context.nutritional_context_management import get_context, save_context
 
 # Loads environment variables from the local .env file.
 load_dotenv()
@@ -29,7 +23,6 @@ llm = ChatGroq(
 # Makes the available application tools accessible to the LLM.
 llm_with_tools = llm.bind_tools(groq_tools)
 
-
 # Defines the base behavior and restrictions of Kora AI.
 SYSTEM_PROMPT = (
     "You are Kora AI, an assistant specialized in nutrition. "
@@ -39,7 +32,6 @@ SYSTEM_PROMPT = (
     "Generate a clear, relevant, and concise response based on the available context. "
     "Do not provide medical diagnoses or complete diet plans."
 )
-
 
 # Builds the conversation prompt using the system instructions,
 # nutritional context, previous history, current user message,
@@ -54,11 +46,9 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
     ]
 )
 
-
 # Creates the LangChain execution pipeline using the prompt template
 # and the LLM with tool-calling support enabled.
 chain = PROMPT_TEMPLATE | llm_with_tools
-
 
 def generate_response(
     message: str,
