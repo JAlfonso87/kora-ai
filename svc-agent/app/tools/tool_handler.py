@@ -1,14 +1,19 @@
-import json
 from app.tools.tool_calls import tool_specs as tools
 
-def handle_tool_call(tool_call, context):
-    tool = tools[tool_call.function.name]
-    # Intercepts Groq's tool call and transforms the argument list into a dictionary that is subject to be compared with an existent 'RequirementModel'
-    arguments = json.loads(tool_call.function.arguments)
+def handle_tool_call(tool_call: dict, context):
+    # Retrieves the requested tool name and its already-parsed arguments
+    # from the LangChain tool call structure.
+    tool_name = tool_call["name"]
+    arguments = tool_call["args"]
 
-    # Validates the transformed argument dictionary against a 'RequirementModel' previously defined.
+    # Retrieves the corresponding tool specification using the tool name
+    # requested by the LLM.
+    tool = tools[tool_name]
+
+    # Validates the tool arguments against the Pydantic requirements model
+    # defined for the selected tool.
     params = tool["params_model"].model_validate(arguments)
 
-    # Executes the function referred inside the dict entry selected with the just-validated set of params (see tool_calls.toool_specs for more info)
-    # then returns the results of said function
+    # Executes the corresponding tool function using the current nutritional
+    # context and the validated parameters, then returns its result.
     return tool["function"](context, params)

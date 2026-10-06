@@ -51,4 +51,3 @@ class ProteinQueryRequirements(BaseModel):
         gt=0,
         description="User's protein target expressed in grams.",
     ),
-
