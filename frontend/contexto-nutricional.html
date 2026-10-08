@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contexto Nutricional · Kora AI</title>
+
+  <link rel="stylesheet" href="css/vendor.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="images/k.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body class="kora-app kora-app--context">
+
+  <header class="kora-topbar">
+    <div class="kora-topbar__brand">
+      <a href="index.html" class="kora-topbar__back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Volver al chat
+      </a>
+    </div>
+    <div class="kora-topbar__actions">
+      <span class="kora-badge">Contexto Nutricional</span>
+    </div>
+  </header>
+
+  <div class="kora-context-page">
+    <div class="kora-context-card">
+      <div class="kora-context-card__head">
+        <h1 class="kora-context-card__title">Contexto Nutricional</h1>
+        <p class="kora-context-card__desc">
+          Completa los datos que desees. Se guardan en este navegador y se envían automáticamente con cada pregunta al agente.
+        </p>
+      </div>
+
+      <form id="contextForm" class="kora-form" novalidate>
+
+        <fieldset class="kora-fieldset">
+          <legend class="kora-fieldset__legend">Objetivos</legend>
+          <div class="kora-grid kora-grid--3">
+            <div class="kora-field">
+              <label for="goalPrimary" class="kora-field__label">Objetivo principal</label>
+              <select id="goalPrimary" name="goalPrimary" class="kora-field__input">
+                <option value="">— No indicar —</option>
+                <option value="weight_loss">Pérdida de peso</option>
+                <option value="muscle_gain">Ganancia muscular</option>
+                <option value="maintenance">Mantenimiento</option>
+              </select>
+            </div>
+            <div class="kora-field">
+              <label for="calorieTarget" class="kora-field__label">Calorías objetivo (kcal)</label>
+              <input type="number" id="calorieTarget" name="calorieTarget" class="kora-field__input" min="1" step="1" placeholder="2000" />
+            </div>
+            <div class="kora-field">
+              <label for="proteinTarget" class="kora-field__label">Proteína objetivo (g)</label>
+              <input type="number" id="proteinTarget" name="proteinTarget" class="kora-field__input" min="1" step="0.1" placeholder="120" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="kora-fieldset">
+          <legend class="kora-fieldset__legend">Consumo actual</legend>
+          <div class="kora-grid kora-grid--2">
+            <div class="kora-field">
+              <label for="caloriesConsumed" class="kora-field__label">Calorías consumidas (kcal)</label>
+              <input type="number" id="caloriesConsumed" name="caloriesConsumed" class="kora-field__input" min="0" step="1" placeholder="1550" />
+            </div>
+            <div class="kora-field">
+              <label for="proteinConsumed" class="kora-field__label">Proteína consumida (g)</label>
+              <input type="number" id="proteinConsumed" name="proteinConsumed" class="kora-field__input" min="0" step="0.1" placeholder="75" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="kora-fieldset">
+          <legend class="kora-fieldset__legend">Nutrientes restantes</legend>
+          <div class="kora-grid kora-grid--2">
+            <div class="kora-field">
+              <label for="caloriesRemaining" class="kora-field__label">Calorías restantes (kcal)</label>
+              <input type="number" id="caloriesRemaining" name="caloriesRemaining" class="kora-field__input" min="0" step="1" placeholder="450" />
+            </div>
+            <div class="kora-field">
+              <label for="proteinRemaining" class="kora-field__label">Proteína restante (g)</label>
+              <input type="number" id="proteinRemaining" name="proteinRemaining" class="kora-field__input" min="0" step="0.1" placeholder="45" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="kora-fieldset">
+          <legend class="kora-fieldset__legend">Preferencias y restricciones</legend>
+          <div class="kora-grid kora-grid--2">
+            <div class="kora-field">
+              <label for="preferredFoods" class="kora-field__label">Alimentos preferidos</label>
+              <input type="text" id="preferredFoods" name="preferredFoods" class="kora-field__input" placeholder="pollo, arroz, verduras" />
+              <p class="kora-field__hint">Separados por comas</p>
+            </div>
+            <div class="kora-field">
+              <label for="avoidedFoods" class="kora-field__label">Alimentos evitados</label>
+              <input type="text" id="avoidedFoods" name="avoidedFoods" class="kora-field__input" placeholder="pescado, mariscos" />
+              <p class="kora-field__hint">Separados por comas</p>
+            </div>
+            <div class="kora-field">
+              <label for="allergies" class="kora-field__label">Alergias</label>
+              <input type="text" id="allergies" name="allergies" class="kora-field__input" placeholder="gluten, lactosa" />
+              <p class="kora-field__hint">Separados por comas</p>
+            </div>
+            <div class="kora-field">
+              <label for="unavailableFoods" class="kora-field__label">Alimentos no disponibles</label>
+              <input type="text" id="unavailableFoods" name="unavailableFoods" class="kora-field__input" placeholder="salmón, quinoa" />
+              <p class="kora-field__hint">Separados por comas</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="kora-fieldset">
+          <legend class="kora-fieldset__legend">Perfil del usuario</legend>
+          <div class="kora-grid kora-grid--4">
+            <div class="kora-field">
+              <label for="age" class="kora-field__label">Edad</label>
+              <input type="number" id="age" name="age" class="kora-field__input" min="1" max="120" step="1" placeholder="28" />
+            </div>
+            <div class="kora-field">
+              <label for="sex" class="kora-field__label">Sexo</label>
+              <select id="sex" name="sex" class="kora-field__input">
+                <option value="">—</option>
+                <option value="male">Masculino</option>
+                <option value="female">Femenino</option>
+              </select>
+            </div>
+            <div class="kora-field">
+              <label for="weightKg" class="kora-field__label">Peso (kg)</label>
+              <input type="number" id="weightKg" name="weightKg" class="kora-field__input" min="1" step="0.1" placeholder="72" />
+            </div>
+            <div class="kora-field">
+              <label for="heightCm" class="kora-field__label">Altura (cm)</label>
+              <input type="number" id="heightCm" name="heightCm" class="kora-field__input" min="1" step="0.1" placeholder="175" />
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="kora-form__actions">
+          <button type="button" id="btnSaveContext" class="kora-btn kora-btn--primary">
+            Guardar contexto
+          </button>
+          <button type="button" id="btnFillExample" class="kora-btn kora-btn--ghost">
+            Cargar ejemplo
+          </button>
+          <button type="button" id="btnClearContext" class="kora-btn kora-btn--ghost">
+            Limpiar
+          </button>
+        </div>
+
+        <p id="contextStatus" class="kora-context-status" hidden></p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    const STORAGE_KEY = "kora_nutritional_context";
+
+    const fields = [
+      "goalPrimary", "calorieTarget", "proteinTarget",
+      "caloriesConsumed", "proteinConsumed",
+      "caloriesRemaining", "proteinRemaining",
+      "preferredFoods", "avoidedFoods", "allergies", "unavailableFoods",
+      "age", "sex", "weightKg", "heightCm"
+    ];
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        fields.forEach((id) => {
+          const el = document.getElementById(id);
+          if (el && data[id] !== undefined && data[id] !== null) {
+            el.value = data[id];
+          }
+        });
+      } catch (_) {}
+    }
+
+    function save() {
+      const data = {};
+      fields.forEach((id) => {
+        const el = document.getElementById(id);
+        data[id] = el ? el.value : "";
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      const status = document.getElementById("contextStatus");
+      status.hidden = false;
+      status.textContent = "Contexto guardado. Se usará en las próximas consultas del chat.";
+      status.className = "kora-context-status is-ok";
+      setTimeout(() => { status.hidden = true; }, 3500);
+    }
+
+    function clear() {
+      fields.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      localStorage.removeItem(STORAGE_KEY);
+      const status = document.getElementById("contextStatus");
+      status.hidden = false;
+      status.textContent = "Contexto eliminado.";
+      status.className = "kora-context-status";
+      setTimeout(() => { status.hidden = true; }, 2500);
+    }
+
+    document.getElementById("btnSaveContext").addEventListener("click", save);
+    document.getElementById("btnClearContext").addEventListener("click", clear);
+
+    document.getElementById("btnFillExample").addEventListener("click", () => {
+      document.getElementById("goalPrimary").value = "weight_loss";
+      document.getElementById("calorieTarget").value = "2000";
+      document.getElementById("proteinTarget").value = "120";
+      document.getElementById("caloriesConsumed").value = "1550";
+      document.getElementById("proteinConsumed").value = "75";
+      document.getElementById("caloriesRemaining").value = "450";
+      document.getElementById("proteinRemaining").value = "45";
+      document.getElementById("preferredFoods").value = "pollo, arroz, verduras";
+      document.getElementById("avoidedFoods").value = "pescado";
+      document.getElementById("allergies").value = "";
+      document.getElementById("unavailableFoods").value = "";
+      document.getElementById("age").value = "28";
+      document.getElementById("sex").value = "male";
+      document.getElementById("weightKg").value = "72";
+      document.getElementById("heightCm").value = "175";
+    });
+
+    load();
+  })();
+  </script>
+</body>
+</html>
