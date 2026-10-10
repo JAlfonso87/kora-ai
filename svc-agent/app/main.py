@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 import logging, traceback
 from fastapi.middleware.cors import CORSMiddleware
+from httpcore import request
 from app.models import AgentRequest, AgentResponse
 from app.services.llm_service import generate_response
 from app.services.memory import clear_session
@@ -31,10 +32,13 @@ def health_check():
 @app.post("/agent/query", response_model=AgentResponse)
 def query_agent(request: AgentRequest):
     try:
+        
         response_text, session_id = generate_response(
             message=request.message,
             session_id=request.session_id,
+            nutritional_context=request.nutritional_context,
         )
+
 
         return AgentResponse(
             response=response_text,
