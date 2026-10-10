@@ -6,7 +6,9 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import UUIDField
 from rest_framework.response import Response
-
+from management.services.nutritional_context_service import (
+    build_nutritional_context,
+)
 from management.models import User, Conversation
 from management.serializers import (
     ConversationCreateSerializer,
@@ -22,9 +24,11 @@ from management.services.conversation_service import (
 )
 
 
+
 @api_view(["POST"])
 def agent_test(request):
     message = request.data.get("message")
+    user_id = request.data.get("user_id")
 
     if not isinstance(message, str) or not message.strip():
         return Response(
@@ -32,15 +36,41 @@ def agent_test(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    if not user_id:
+        return Response(
+            {"error": "El user_id es obligatorio."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     try:
-        result = call_agent(message.strip())
+        user = User.objects.get(id=user_id)
+
+        # Retrieves the user's nutritional context from the database.
+        nutritional_context = build_nutritional_context(user)
+
+        # Sends the message and context to the AI agent.
+        result = call_agent(
+            message.strip(),
+            nutritional_context=nutritional_context,
+        )
+
+    except User.DoesNotExist:
+        return Response(
+            {"error": "El usuario no existe."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
     except requests.RequestException:
         return Response(
             {"error": "No fue posible comunicarse con el agente."},
             status=status.HTTP_502_BAD_GATEWAY,
         )
 
-    return Response({"agent_response": result})
+    return Response({
+        "user_id": str(user.id),
+        "nutritional_context": nutritional_context,
+        "agent_response": result,
+    })
 
 
 @api_view(["POST"])
