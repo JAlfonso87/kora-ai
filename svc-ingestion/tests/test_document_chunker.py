@@ -4,14 +4,15 @@ from app.chunkers.document_chunker import DocumentChunker
 
 
 def test_split_long_document():
-    chunker = DocumentChunker(chunk_size=5, overlap=2)
+    chunker = DocumentChunker(chunk_size=10, overlap=3)
 
-    chunks = chunker.split("1234567890")
+    chunks = chunker.split("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
     assert chunks == [
-        "12345",
-        "45678",
-        "7890"
+        "ABCDEFGHIJ",
+        "HIJKLMNOPQ",
+        "OPQRSTUVWX",
+        "VWXYZ"
     ]
 
 

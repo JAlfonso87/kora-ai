@@ -17,15 +17,19 @@ class DocumentChunker:
         # Split the text into chunks wit a configurable overlap
         chunks = []
         start = 0
+        end = self.chunk_size
         step = self.chunk_size - self.overlap
 
-        while start < len(content):
-            end = start + self.chunk_size
+        while True:
             chunk = content[start:end].strip()
 
             if chunk:
                 chunks.append(chunk)
 
+            if end + 1 >= len(content):
+                break
+
             start += step
+            end = start + self.chunk_size
 
         return chunks
