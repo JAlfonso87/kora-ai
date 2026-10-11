@@ -9,7 +9,9 @@ from app.services.memory import get_history, add_message
 from app.tools.tool_calls import groq_tools
 from app.tools.tool_handler import handle_tool_call
 from app.nutritional_context.nutritional_context_management import get_context, save_context
-
+from app.nutritional_context.nutritional_context_models import (
+    NutritionalContext,
+)
 # Loads environment variables from the local .env file.
 load_dotenv()
 
@@ -53,6 +55,7 @@ chain = PROMPT_TEMPLATE | llm_with_tools
 def generate_response(
     message: str,
     session_id: str | None = None,
+    nutritional_context: NutritionalContext | None = None,
 ) -> tuple[str, str]:
     """
     Generates an LLM response using conversation memory,
@@ -61,20 +64,39 @@ def generate_response(
     Returns:
         A tuple containing the LLM response and the session ID used.
     """
-
-    # Creates a new session when the request does not provide one.
+    
     if not session_id:
         session_id = str(uuid.uuid4())
 
-    # Retrieves only the conversation history that existed
-    # before the current user message.
+    # Retrieves the current context for this session.
+    current_context = get_context(session_id)
+
+    # Updates the context only when new context is received.
+    if nutritional_context is not None:
+
+        # Preserves consumption data already stored in the session.
+        if nutritional_context.current_consumption is None:
+            nutritional_context.current_consumption = (
+                current_context.current_consumption
+            )
+
+        if nutritional_context.remaining_nutrients is None:
+            nutritional_context.remaining_nutrients = (
+                current_context.remaining_nutrients
+            )
+
+        save_context(
+            session_id=session_id,
+            context=nutritional_context,
+        )
+
+    # Retrieves the conversation history.
     history = get_history(session_id)
 
-    # Stores the current user message for future requests.
+    # Stores the current user message.
     add_message(session_id, "user", message)
 
-    # Stores AI tool calls and their corresponding results
-    # only for the current request execution.
+    # Initializes the messages used during tool execution.
     tool_messages = []
 
     while True:
