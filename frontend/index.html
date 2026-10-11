@@ -4,238 +4,265 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kora AI</title>
-  
-    <link rel="stylesheet" href="css/vendor.css">
-    <link rel="stylesheet" href="css/styles.css">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/k.svg">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/k.svg">
-    <link rel="manifest" href="site.webmanifest">
+  <link rel="stylesheet" href="css/vendor.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="images/k.svg">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/k.svg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 
-<body id="top" class="page-main">
-   
-    <div id="page" class="s-pagewrap s-pagewrap--main">
+<body class="kora-app">
 
-        <div class="menu-underlay"></div>
+  <header class="kora-topbar">
 
-        <header class="s-header s-header--main">
+    <div class="kora-topbar__left">
+      <button
+        type="button"
+        id="btnOpenSidebar"
+        class="kora-sidebar__open"
+        title="Abrir navegación"
+        aria-label="Abrir navegación"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
 
-            <div class="s-header__block s-header__block--main">
+    <div class="kora-topbar__actions">
+      <span id="sessionBadge" class="kora-badge" title="Identificador de sesión">
+        Sin sesión
+      </span>
 
-                <div class="s-header__logo s-header__logo--main">
-                    <a class="logo" href="index.html">
-                        <img src="images/logo.svg" alt="Kora">
-                    </a>
-                </div>
+      <button type="button" id="btnOpenLogin" class="kora-btn kora-btn--ghost kora-btn--sm">
+        Iniciar sesión
+      </button>
+    </div>
 
-                
-              <div class="s-header__right">
-                <span id="sessionBadge" class="badge badge--muted" title="Identificador de sesión">Sin sesión</span>
-                <button type="button" id="btnClearSession" class="btn btn--ghost btn--sm" title="Reiniciar conversación" disabled>
-                  Nueva sesión
-                </button>
-              </div>
+  </header>
 
-            </div> 
+  <div class="kora-layout">
 
+    <aside class="kora-sidebar" id="sidebar">
+      <div class="kora-sidebar__header">
+        <a href="index.html" class="kora-sidebar__logo">
+          <span class="kora-sidebar__logo-text">KORA</span>
+        </a>
+        <button type="button" class="kora-sidebar__collapse" id="btnCollapseSidebar" title="Colapsar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+      </div>
 
-    </header>
+      <nav class="kora-sidebar__nav">
+        <button type="button" class="kora-nav-item kora-nav-item--primary" id="btnNewChat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span>Chat nuevo</span>
+        </button>
 
-    <main class="main">
-      
-      <section class="panel panel--form" aria-labelledby="form-heading">
-        <div class="panel__head">
-          <h2 id="form-heading" class="panel__title">Solicitud</h2>
-          <p class="panel__desc">Escribe tu pregunta y, si lo deseas, aporta contexto nutricional estructurado.</p>
+        <a href="#" class="kora-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <span>Imágenes</span>
+        </a>
+
+        <a href="contexto-nutricional.html" class="kora-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.5 4.5-3 6l-4 4-4-4c-1.5-1.5-3-3.5-3-6a7 7 0 0 1 7-7z"/>
+            <circle cx="12" cy="9" r="2"/>
+          </svg>
+          <span>Contexto Nutricional</span>
+        </a>
+      </nav>
+
+      <div class="kora-sidebar__section">
+        <h3 class="kora-sidebar__section-title">Recientes</h3>
+        <div class="kora-sidebar__recents" id="recentChats">
+          <button type="button" class="kora-recent-item is-active">Introducción Kora AI</button>
+          <button type="button" class="kora-recent-item">Mis alimentos favoritos</button>
+          <button type="button" class="kora-recent-item">Que puedo comer esta semana</button>
+          <button type="button" class="kora-recent-item">Complete mi plan de alimentacion</button>
+        </div>
+      </div>
+
+      <div class="kora-sidebar__footer">
+        <button type="button" id="btnClearSession" class="kora-nav-item kora-nav-item--muted" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          </svg>
+          <span>Limpiar sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="kora-main">
+      <div class="kora-chat" id="chatContainer">
+
+        <div class="kora-welcome" id="stateEmpty">
+          <div class="kora-welcome__icon">
+            <img src="images/koralogo.svg" alt="" width="48" height="48" />
+          </div>
+          <h1 class="kora-welcome__title">Kora AI</h1>
+          <p class="kora-welcome__subtitle">Tu asistente nutricional inteligente. Pregunta lo que quieras.</p>
+          <div class="kora-welcome__suggestions">
+            <button type="button" class="kora-suggestion" data-prompt="¿Qué puedo comer para completar la proteína de hoy?">
+              Completar proteína de hoy
+            </button>
+            <button type="button" class="kora-suggestion" data-prompt="Sugiéreme un menú equilibrado para pérdida de peso">
+              Menú para pérdida de peso
+            </button>
+            <button type="button" class="kora-suggestion" data-prompt="¿Cómo puedo aumentar mi ingesta de fibra?">
+              Aumentar fibra
+            </button>
+          </div>
         </div>
 
-        <form id="queryForm" class="form" novalidate>
-          
-          <div class="field field--full">
-            <label for="message" class="field__label">
-              Mensaje <span class="required">*</span>
-            </label>
+        <div class="kora-messages" id="messagesList" hidden></div>
+
+        <div class="kora-loading" id="stateLoading" hidden>
+          <div class="kora-loading__dots">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="kora-loading__text">Kora está pensando…</span>
+        </div>
+
+        <div class="kora-error" id="stateError" hidden>
+          <div class="kora-error__content">
+            <span class="kora-error__icon">!</span>
+            <p id="errorMessage" class="kora-error__text"></p>
+            <button type="button" id="btnRetry" class="kora-btn kora-btn--ghost kora-btn--sm">Reintentar</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="kora-composer">
+        <form id="queryForm" class="kora-composer__form" novalidate>
+          <div class="kora-composer__inner">
             <textarea
               id="message"
               name="message"
-              class="field__input field__textarea"
-              rows="3"
-              placeholder="Ej.: ¿Qué puedo comer para completar la proteína de hoy?"
+              class="kora-composer__input"
+              rows="1"
+              placeholder="Pregunta lo que quieras"
               required
               maxlength="2000"
+              autocomplete="off"
             ></textarea>
-            <p class="field__hint">Obligatorio. No se envían datos inventados al agente.</p>
-          </div>
-
-          <details class="context" open>
-            <summary class="context__summary">
-              <span>Contexto nutricional</span>
-              <span class="context__hint">Opcional · contrato HU-005</span>
-            </summary>
-
-            <div class="context__body">
-              <fieldset class="fieldset">
-                <legend class="fieldset__legend">Objetivos</legend>
-                <div class="grid grid--3">
-                  <div class="field">
-                    <label for="goalPrimary" class="field__label">Objetivo principal</label>
-                    <select id="goalPrimary" name="goalPrimary" class="field__input">
-                      <option value="">— No indicar —</option>
-                      <option value="weight_loss">Pérdida de peso</option>
-                      <option value="muscle_gain">Ganancia muscular</option>
-                      <option value="maintenance">Mantenimiento</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="calorieTarget" class="field__label">Calorías objetivo (kcal)</label>
-                    <input type="number" id="calorieTarget" name="calorieTarget" class="field__input" min="1" step="1" placeholder="2000" />
-                  </div>
-                  <div class="field">
-                    <label for="proteinTarget" class="field__label">Proteína objetivo (g)</label>
-                    <input type="number" id="proteinTarget" name="proteinTarget" class="field__input" min="1" step="0.1" placeholder="120" />
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset class="fieldset">
-                <legend class="fieldset__legend">Consumo actual</legend>
-                <div class="grid grid--2">
-                  <div class="field">
-                    <label for="caloriesConsumed" class="field__label">Calorías consumidas (kcal)</label>
-                    <input type="number" id="caloriesConsumed" name="caloriesConsumed" class="field__input" min="0" step="1" placeholder="1550" />
-                  </div>
-                  <div class="field">
-                    <label for="proteinConsumed" class="field__label">Proteína consumida (g)</label>
-                    <input type="number" id="proteinConsumed" name="proteinConsumed" class="field__input" min="0" step="0.1" placeholder="75" />
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset class="fieldset">
-                <legend class="fieldset__legend">Nutrientes restantes</legend>
-                <div class="grid grid--2">
-                  <div class="field">
-                    <label for="caloriesRemaining" class="field__label">Calorías restantes (kcal)</label>
-                    <input type="number" id="caloriesRemaining" name="caloriesRemaining" class="field__input" min="0" step="1" placeholder="450" />
-                  </div>
-                  <div class="field">
-                    <label for="proteinRemaining" class="field__label">Proteína restante (g)</label>
-                    <input type="number" id="proteinRemaining" name="proteinRemaining" class="field__input" min="0" step="0.1" placeholder="45" />
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset class="fieldset">
-                <legend class="fieldset__legend">Preferencias y restricciones</legend>
-                <div class="grid grid--2">
-                  <div class="field">
-                    <label for="preferredFoods" class="field__label">Alimentos preferidos</label>
-                    <input type="text" id="preferredFoods" name="preferredFoods" class="field__input" placeholder="pollo, arroz, verduras" />
-                    <p class="field__hint">Separados por comas</p>
-                  </div>
-                  <div class="field">
-                    <label for="avoidedFoods" class="field__label">Alimentos evitados</label>
-                    <input type="text" id="avoidedFoods" name="avoidedFoods" class="field__input" placeholder="pescado, mariscos" />
-                    <p class="field__hint">Separados por comas</p>
-                  </div>
-                  <div class="field">
-                    <label for="allergies" class="field__label">Alergias</label>
-                    <input type="text" id="allergies" name="allergies" class="field__input" placeholder="gluten, lactosa" />
-                    <p class="field__hint">Separados por comas</p>
-                  </div>
-                  <div class="field">
-                    <label for="unavailableFoods" class="field__label">Alimentos no disponibles</label>
-                    <input type="text" id="unavailableFoods" name="unavailableFoods" class="field__input" placeholder="salmón, quinoa" />
-                    <p class="field__hint">Separados por comas</p>
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset class="fieldset">
-                <legend class="fieldset__legend">Perfil del usuario</legend>
-                <div class="grid grid--4">
-                  <div class="field">
-                    <label for="age" class="field__label">Edad</label>
-                    <input type="number" id="age" name="age" class="field__input" min="1" max="120" step="1" placeholder="28" />
-                  </div>
-                  <div class="field">
-                    <label for="sex" class="field__label">Sexo</label>
-                    <select id="sex" name="sex" class="field__input">
-                      <option value="">—</option>
-                      <option value="male">Masculino</option>
-                      <option value="female">Femenino</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="weightKg" class="field__label">Peso (kg)</label>
-                    <input type="number" id="weightKg" name="weightKg" class="field__input" min="1" step="0.1" placeholder="72" />
-                  </div>
-                  <div class="field">
-                    <label for="heightCm" class="field__label">Altura (cm)</label>
-                    <input type="number" id="heightCm" name="heightCm" class="field__input" min="1" step="0.1" placeholder="175" />
-                  </div>
-                </div>
-              </fieldset>
+            <div class="kora-composer__actions">
+              <button type="button" class="kora-composer__btn" title="Voz" aria-label="Entrada de voz">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+                </svg>
+              </button>
+              <button type="submit" id="btnSubmit" class="kora-composer__send" title="Enviar" aria-label="Enviar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+              </button>
             </div>
-          </details>
-
-          <div class="form__actions">
-            <button type="submit" id="btnSubmit" class="btn btn--primary">
-              <span class="btn__label">Consultar a Kora AI</span>
-              <span class="btn__spinner" aria-hidden="true"></span>
-            </button>
-            <button type="button" id="btnFillExample" class="btn btn--ghost">
-              Cargar ejemplo
-            </button>
           </div>
+          <p class="kora-composer__hint">
+            Kora puede cometer errores. Verifica información importante.
+            <span id="apiBaseLabel" class="kora-composer__api"></span>
+          </p>
         </form>
-      </section>
-      <section class="panel panel--response" aria-labelledby="response-heading">
-        <div class="panel__head">
-          <h2 id="response-heading" class="panel__title">Respuesta de Kora AI</h2>
-        </div>
-        <div id="stateEmpty" class="state state--empty">
-          <div class="state__icon" aria-hidden="true">◇</div>
-          <p class="state__title">Aún no hay respuesta</p>
-          <p class="state__text">Envía una solicitud para ver la respuesta del agente aquí.</p>
-        </div>
-        <div id="stateLoading" class="state state--loading" hidden>
-          <div class="spinner" aria-hidden="true"></div>
-          <p class="state__title">Procesando solicitud…</p>
-          <p class="state__text">svc-agente → LLM</p>
-        </div>
-        <div id="stateError" class="state state--error" hidden>
-          <div class="state__icon state__icon--error" aria-hidden="true">!</div>
-          <p class="state__title">No se pudo completar la solicitud</p>
-          <p id="errorMessage" class="state__text"></p>
-          <button type="button" id="btnRetry" class="btn btn--ghost btn--sm">Reintentar</button>
-        </div>
-        <div id="stateSuccess" class="state state--success" hidden>
-          <div class="response-card">
-            <div class="response-card__meta">
-              <span class="badge badge--ok">Respuesta recibida</span>
-              <span id="responseSession" class="response-card__session"></span>
-            </div>
-            <div id="responseText" class="response-card__body"></div>
-          </div>
-        </div>
-      </section>
+      </div>
     </main>
 
-    <footer class="footer">
-      <p>
-        Kora AI · V1 · Contrato
-        <code>POST /agent/query</code>
-        · svc-agente en
-        <code id="apiBaseLabel">http://localhost:8000</code>
-      </p>
-    </footer>
   </div>
 
+  <div id="loginModal" class="login-modal" hidden aria-hidden="true">
+    <div class="login-modal__overlay" data-close-login></div>
+    <div class="login-modal__card" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="login-modal__header">
+        <span class="login-modal__brand">KORA</span>
+        <button type="button" class="login-modal__close" data-close-login aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="login-modal__body">
+        <h2 id="loginTitle" class="login-modal__title">Inicio de Sesión</h2>
+        <p class="login-modal__subtitle">Por favor, introduce tus datos</p>
+
+        <form id="loginForm" class="login-form" novalidate>
+          <div class="login-field">
+            <label for="loginEmail" class="login-field__label">Email</label>
+            <input type="email" id="loginEmail" name="email" class="login-field__input" autocomplete="email" />
+          </div>
+          <div class="login-field">
+            <label for="loginPassword" class="login-field__label">Contraseña</label>
+            <input type="password" id="loginPassword" name="password" class="login-field__input" autocomplete="current-password" />
+          </div>
+          <div class="login-form__forgot">
+            <a href="#" class="login-link">Olvidé mi contraseña</a>
+          </div>
+          <button type="button" class="login-btn login-btn--primary">
+            Ingresar
+          </button>
+          <p class="login-form__footer">
+            No tienes una cuenta? <a href="#" class="login-link">Registrarme</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="hiddenContext" hidden>
+    <input type="hidden" id="goalPrimary" value="" />
+    <input type="hidden" id="calorieTarget" value="" />
+    <input type="hidden" id="proteinTarget" value="" />
+    <input type="hidden" id="caloriesConsumed" value="" />
+    <input type="hidden" id="proteinConsumed" value="" />
+    <input type="hidden" id="caloriesRemaining" value="" />
+    <input type="hidden" id="proteinRemaining" value="" />
+    <input type="hidden" id="preferredFoods" value="" />
+    <input type="hidden" id="avoidedFoods" value="" />
+    <input type="hidden" id="allergies" value="" />
+    <input type="hidden" id="unavailableFoods" value="" />
+    <input type="hidden" id="age" value="" />
+    <input type="hidden" id="sex" value="" />
+    <input type="hidden" id="weightKg" value="" />
+    <input type="hidden" id="heightCm" value="" />
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
   <script src="js/app.js"></script>
+  <script>
+  (function () {
+    const modal = document.getElementById('loginModal');
+    const openBtn = document.getElementById('btnOpenLogin');
+    if (!modal || !openBtn) return;
+
+    function openLogin() {
+      modal.hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      document.getElementById('loginEmail')?.focus();
+    }
+    function closeLogin() {
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    openBtn.addEventListener('click', openLogin);
+    modal.querySelectorAll('[data-close-login]').forEach(el => {
+      el.addEventListener('click', closeLogin);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeLogin();
+    });
+  })();
+  </script>
 </body>
 </html>
