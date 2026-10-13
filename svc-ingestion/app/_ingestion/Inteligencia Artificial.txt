@@ -1,0 +1,5 @@
+Inteligencia artificial
+
+La inteligencia artificial es una rama de la informática que desarrolla sistemas capaces de realizar tareas que normalmente requieren inteligencia humana. Entre sus aplicaciones se encuentran el reconocimiento de voz, la traducción automática, los asistentes virtuales y el análisis de imágenes.
+
+El aprendizaje automático permite que un sistema identifique patrones a partir de datos y mejore su desempeño sin que cada regla tenga que programarse manualmente. Sin embargo, los resultados dependen de la calidad de los datos, del diseño del modelo y de cómo se evalúa.
