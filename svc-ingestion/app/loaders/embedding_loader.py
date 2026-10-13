@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 from app._db.pool import pool
 
 class EMBLoader():
