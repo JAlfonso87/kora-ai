@@ -1,11 +1,25 @@
 from sentence_transformers import SentenceTransformer
+import logging, time
 
 class EmbeddingGenerator:
     MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
     def __init__(self):
         # Load the multilingual embedding model.
+        logger = logging.getLogger(__name__)
+
+        start = time.perf_counter()
+
+        logger.info("Iniciando carga del modelo: %s", self.MODEL_NAME)
+
         self.model = SentenceTransformer(self.MODEL_NAME)
+
+        elapsed = time.perf_counter() - start
+
+        logger.info(
+            "Modelo cargado correctamente en %.2f segundos",
+            elapsed,
+        )
 
     def generate(self, text: str) -> list[float]:
         if not isinstance(text,  str):
