@@ -4,27 +4,42 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from app.pipeline.ingestion_pipeline import IngestionPipeline
+from app.embeddings.embedding_generator import EmbeddingGenerator
+from app.search.search_document import SearchDocument
 
 app = FastAPI(
     title="Kora AI - Ingestion Service",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 pipeline = IngestionPipeline()
-
+eg = EmbeddingGenerator()
+sd = SearchDocument()
 
 class IngestionRequest(BaseModel):
     file_path: str
 
+class SearchQuery(BaseModel):
+    content: str
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
+@app.post("/query")
+def process_query(query: SearchQuery):
+    user_query = query.content
+    print(f"<< RECEIVED QUERY: {user_query}")
+    embedded_query = eg.generate(user_query)
+    query_results = sd.search(embedded_query)
 
+    return query_results
+
+    
 @app.post("/ingest")
 def ingest_document(request: IngestionRequest):
     # Resolve the document path from the ingestion service directory.
+    print(request)
     base_path = Path(__file__).resolve().parent.parent
     file_path = (base_path / request.file_path).resolve()
 
@@ -36,14 +51,37 @@ def ingest_document(request: IngestionRequest):
         )
 
     try: 
-        return pipeline.ingest(str(file_path))
-    except FileNotFoundError:
-        raise HTTPException(
-            status_code=404,
-            detail="Document not found"
-        )
+        print(str(file_path))
+        ingestion_result = pipeline.ingest(str(file_path))
+        print(f"<< INGESTION PROCESS FINISHED WITH NO ERRORS >>")
+        return ingestion_result
+    
+    except FileNotFoundError as error: 
+        raise HTTPException( 
+            status_code=404, 
+            detail={ 
+                "message": "Document not found", 
+                "error_type": type(error).__name__, 
+                "error_message": str(error), 
+                "filename": error.filename, 
+                "filename2": error.filename2, 
+                "errno": error.errno, 
+                "strerror": error.strerror, 
+                "args": error.args 
+            } 
+        ) from error
+    
     except ValueError as error:
-        raise HTTPException(
-            status_code=400,
-            detail=str(error)
-        )
+        raise HTTPException( 
+            status_code=400, 
+            detail={ 
+                "message": "Document not found", 
+                "error_type": type(error).__name__, 
+                "error_message": str(error), 
+                "filename": error.filename, 
+                "filename2": error.filename2, 
+                "errno": error.errno, 
+                "strerror": error.strerror, 
+                "args": error.args 
+            } 
+        ) from error

@@ -11,6 +11,7 @@ class DocumentChunker:
         self.overlap = overlap
 
     def split(self, content: str) -> list[str]:
+        print("<< CONTENT RECEIVED IN document_chunker.split: OK >>")
         if not isinstance(content, str):
             raise TypeError("Document content must be a string")
 
@@ -19,6 +20,11 @@ class DocumentChunker:
         start = 0
         end = self.chunk_size
         step = self.chunk_size - self.overlap
+
+        print("<< CALCULATED CHUNKING PARAMETERS FOR CURRENT ACTION: >>")
+        print(f"<< START: {start} >>")
+        print(f"<< END: {end} >>")
+        print(f"<< STEP: {step} >>")
 
         while True:
             chunk = content[start:end].strip()
@@ -31,5 +37,7 @@ class DocumentChunker:
 
             start += step
             end = start + self.chunk_size
+
+        print("<< CHUNKING CYCLE FINISHED WITH NO ERRORS >>")
 
         return chunks
