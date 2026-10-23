@@ -1,0 +1,263 @@
+{
+  "schema_version": "0.1",
+  "description": "Catálogo inicial ilustrativo; adaptar a los identificadores reales de hechos y validar antes de usar.",
+  "rules": [
+    {
+      "id": "SAFE_001",
+      "name": "Posible presencia de alérgeno registrado",
+      "category": "safety",
+      "description": "Detecta si una opción contiene o podría contener un alérgeno registrado por el usuario.",
+      "conditions": [
+        {
+          "fact": "food.allergens",
+          "operator": "contains_any_fact",
+          "value_from_fact": "food_restrictions.allergies"
+        }
+      ],
+      "conclusion": {
+        "type": "safety_warning",
+        "code": "POSSIBLE_ALLERGEN_CONFLICT",
+        "message": "No recomendar como segura una opción que contiene o podría contener un alérgeno registrado."
+      },
+      "priority": 1000,
+      "enabled": true,
+      "notes": "Operador propuesto: requiere normalizar nombres y devolver UNKNOWN si la información de alérgenos es desconocida o incompleta."
+    },
+    {
+      "id": "SAFE_002",
+      "name": "Ingredientes no verificados ante alergia registrada",
+      "category": "safety",
+      "description": "Si hay alergias registradas pero no se conocen suficientemente los ingredientes, no asumir que el alimento es seguro.",
+      "conditions": [
+        {
+          "fact": "food.ingredients",
+          "operator": "unknown_or_missing",
+          "value": true
+        },
+        {
+          "fact": "food_restrictions.allergies",
+          "operator": "exists",
+          "value": true
+        }
+      ],
+      "conclusion": {
+        "type": "safety_warning",
+        "code": "INGREDIENTS_UNVERIFIED",
+        "message": "No se puede confirmar la seguridad frente a las alergias con la información disponible."
+      },
+      "priority": 1000,
+      "enabled": true,
+      "notes": "Operador propuesto: distingue dato ausente/desconocido de una lista de ingredientes verificada y vacía."
+    },
+    {
+      "id": "FOOD_001",
+      "name": "Alimento evitado por el usuario",
+      "category": "preferences",
+      "description": "Detecta coincidencia entre el alimento candidato y los alimentos que el usuario evita.",
+      "conditions": [
+        {
+          "fact": "food.name",
+          "operator": "in_fact",
+          "value_from_fact": "food_restrictions.avoided_foods"
+        }
+      ],
+      "conclusion": {
+        "type": "recommendation_constraint",
+        "code": "USER_AVOIDED_FOOD",
+        "message": "No priorizar esta opción porque el usuario ha indicado que evita este alimento."
+      },
+      "priority": 700,
+      "enabled": true,
+      "notes": "Requiere comparar nombres normalizados; no debe confundirse con alergias."
+    },
+    {
+      "id": "FOOD_002",
+      "name": "Alimento no disponible",
+      "category": "preferences",
+      "description": "Detecta que el usuario ha indicado que no puede conseguir fácilmente el alimento.",
+      "conditions": [
+        {
+          "fact": "food.name",
+          "operator": "in_fact",
+          "value_from_fact": "food_restrictions.unavailable_foods"
+        }
+      ],
+      "conclusion": {
+        "type": "recommendation_constraint",
+        "code": "FOOD_UNAVAILABLE",
+        "message": "Buscar una alternativa accesible; comparar nutrientes solo si hay datos suficientes."
+      },
+      "priority": 600,
+      "enabled": true,
+      "notes": "No afirmar equivalencia nutricional sin datos sobre cantidades y composición."
+    },
+    {
+      "id": "FOOD_003",
+      "name": "Coincidencia con preferencia alimentaria",
+      "category": "preferences",
+      "description": "Identifica un alimento que coincide con las preferencias del usuario.",
+      "conditions": [
+        {
+          "fact": "food.name",
+          "operator": "in_fact",
+          "value_from_fact": "food_preferences.preferred_foods"
+        }
+      ],
+      "conclusion": {
+        "type": "personalization_hint",
+        "code": "PREFERRED_FOOD_MATCH",
+        "message": "Esta opción coincide con una preferencia registrada y puede priorizarse si cumple las restricciones de seguridad."
+      },
+      "priority": 200,
+      "enabled": true,
+      "notes": "Una preferencia nunca anula una advertencia de seguridad."
+    },
+    {
+      "id": "GOAL_001",
+      "name": "Objetivo calórico alcanzado o superado",
+      "category": "goals",
+      "description": "Compara el consumo calórico registrado con el objetivo calórico configurado.",
+      "conditions": [
+        {
+          "fact": "current_consumption.calories_kcal",
+          "operator": "gte",
+          "value_from_fact": "goals.calorie_target_kcal"
+        }
+      ],
+      "conclusion": {
+        "type": "goal_status",
+        "code": "CALORIE_TARGET_REACHED",
+        "message": "El consumo registrado ha alcanzado o superado el objetivo configurado; verifica que los datos sean actuales y comparables."
+      },
+      "priority": 400,
+      "enabled": true,
+      "notes": "No implica por sí solo que se deba omitir una comida. Requiere comparar dos hechos y validar unidades."
+    },
+    {
+      "id": "GOAL_002",
+      "name": "Objetivo de proteína alcanzado o superado",
+      "category": "goals",
+      "description": "Compara la proteína consumida con el objetivo configurado.",
+      "conditions": [
+        {
+          "fact": "current_consumption.protein_g",
+          "operator": "gte",
+          "value_from_fact": "goals.protein_target_g"
+        }
+      ],
+      "conclusion": {
+        "type": "goal_status",
+        "code": "PROTEIN_TARGET_REACHED",
+        "message": "La proteína registrada ha alcanzado o superado el objetivo configurado; verifica la calidad y actualidad de los datos."
+      },
+      "priority": 300,
+      "enabled": true,
+      "notes": "No establece por sí mismo que el objetivo sea clínicamente adecuado."
+    },
+    {
+      "id": "DATA_001",
+      "name": "Falta el objetivo calórico",
+      "category": "data_quality",
+      "description": "Indica que no se puede comparar el consumo con un objetivo calórico ausente.",
+      "conditions": [
+        {
+          "fact": "goals.calorie_target_kcal",
+          "operator": "unknown_or_missing",
+          "value": true
+        }
+      ],
+      "conclusion": {
+        "type": "insufficient_data",
+        "code": "CALORIE_TARGET_MISSING",
+        "message": "No se puede evaluar el progreso respecto al objetivo calórico porque falta ese objetivo."
+      },
+      "priority": 500,
+      "enabled": true,
+      "notes": "El operador missing debe distinguir None/ausente de cero."
+    },
+    {
+      "id": "DATA_002",
+      "name": "Falta el consumo calórico",
+      "category": "data_quality",
+      "description": "Indica que no hay datos suficientes para evaluar el consumo calórico actual.",
+      "conditions": [
+        {
+          "fact": "current_consumption.calories_kcal",
+          "operator": "unknown_or_missing",
+          "value": true
+        }
+      ],
+      "conclusion": {
+        "type": "insufficient_data",
+        "code": "CALORIE_INTAKE_MISSING",
+        "message": "No hay información suficiente para evaluar el consumo calórico actual."
+      },
+      "priority": 500,
+      "enabled": true,
+      "notes": "Un valor desconocido no debe convertirse automáticamente en cero."
+    },
+    {
+      "id": "DATA_003",
+      "name": "Calorías restantes desconocidas",
+      "category": "data_quality",
+      "description": "Detecta que no se dispone de calorías restantes calculadas o fiables.",
+      "conditions": [
+        {
+          "fact": "remaining_nutrients.calories_kcal",
+          "operator": "unknown_or_missing",
+          "value": true
+        }
+      ],
+      "conclusion": {
+        "type": "insufficient_data",
+        "code": "REMAINING_CALORIES_UNKNOWN",
+        "message": "No se puede calcular de forma fiable cuántas calorías quedan para el objetivo con los datos actuales."
+      },
+      "priority": 450,
+      "enabled": true,
+      "notes": "Si este dato se deriva de objetivo y consumo, calcula su valor en un solo lugar para evitar inconsistencias."
+    },
+    {
+      "id": "DATA_004",
+      "name": "Datos calóricos del alimento desconocidos",
+      "category": "data_quality",
+      "description": "Evita afirmaciones cuantitativas si no hay datos calóricos de la opción evaluada.",
+      "conditions": [
+        {
+          "fact": "food.calories_kcal",
+          "operator": "unknown_or_missing",
+          "value": true
+        }
+      ],
+      "conclusion": {
+        "type": "insufficient_data",
+        "code": "FOOD_NUTRITION_UNKNOWN",
+        "message": "No hay datos suficientes para cuantificar las calorías de esta opción; consulta una fuente fiable o identifica claramente cualquier estimación."
+      },
+      "priority": 350,
+      "enabled": true,
+      "notes": "food.* pertenece al alimento evaluado, no al NutritionalContext del usuario."
+    },
+    {
+      "id": "DATA_005",
+      "name": "Procedencia nutricional no verificada",
+      "category": "data_quality",
+      "description": "Advierte si los datos nutricionales proceden de una estimación del LLM o su origen es desconocido.",
+      "conditions": [
+        {
+          "fact": "food.data_source",
+          "operator": "in",
+          "value": ["llm_estimate", "unknown"]
+        }
+      ],
+      "conclusion": {
+        "type": "data_quality_warning",
+        "code": "NUTRITION_DATA_UNVERIFIED",
+        "message": "Los valores nutricionales son estimados o de procedencia desconocida; no presentarlos como exactos."
+      },
+      "priority": 350,
+      "enabled": true,
+      "notes": "Requiere el hecho temporal food.data_source y el operador in."
+    }
+  ]
+}

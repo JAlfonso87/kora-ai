@@ -1,4 +1,4 @@
-from app.nutritional_context.nutritional_context_models import NutritionalContext
+from app.context_module.nutritional_context_models import NutritionalContext
 
 contexts: dict[str, NutritionalContext] = {}
 
