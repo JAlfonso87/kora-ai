@@ -1,5 +1,5 @@
 from app.tools.tool_requirements import ProteinQueryRequirements, NutritionalContextUpdate
-from app.nutritional_context.nutritional_context_models import NutritionalContext
+from app.context_module.nutritional_context_models import NutritionalContext
 
 class Tools():
     def update_nutritional_context(

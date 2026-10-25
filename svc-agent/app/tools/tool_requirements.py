@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Literal
-from app.nutritional_context.nutritional_context_models import UserProfile, Goals, CurrentConsumption, Preferences, Restrictions
+from app.context_module.nutritional_context_models import UserProfile, Goals, CurrentConsumption, Preferences, Restrictions
 
 class NutritionalContextUpdate(BaseModel):
     user_profile: UserProfile | None = Field(

@@ -5,32 +5,39 @@ groq_tools = [
     {
         "type": "function",
         "function": {
-            "name": "protein_assistance_query",
+            "name": "update_nutritional_context",
             "description": (
-                "No debe ejecutarse sin antes intentar actualizar el contexto nutricional mediante la función 'update_nutritional_context'"
-                "El usuario requiere asistencia nutricional referente al consumo de proteína. No inventes datos, si hay algún dato"
-                "que necesites y haga falta para completar la tarea, hazlo saber al usuario directamente guiándolo para entregar dichos"
-                "datos de la forma en que los necesitas y no procedas hasta tener los datos necesarios."
+                "Actualiza el contexto nutricional utilizando exclusivamente "
+                "la información explícita proporcionada por el usuario en "
+                "su mensaje actual. Extrae los datos disponibles para "
+                "NutritionalContext, según lo permita el esquema. "
+                "No inventes ni infieras datos personales no proporcionados. "
+                "Si no hay información nueva relevante, no inventes cambios. "
+                "Utiliza esta herramienta antes de responder cuando el "
+                "mensaje aporte información nutricional nueva o actualice "
+                "datos previos."
             ),
-            "parameters":
-                ProteinQueryRequirements.model_json_schema()
-        } 
+            "parameters": NutritionalContextUpdate.model_json_schema(),
+        },
     },
     {
         "type": "function",
         "function": {
-            "name": "update_nutritional_context",
+            "name": "protein_assistance_query",
             "description": (
-                "Extrae y actualiza el contexto nutricional a partir de la información "
-                "explícitamente proporcionada por el usuario en su mensaje actual. "
-                "Debes identificar cualquier información relevante para user_profile, goals, "
-                "current_consumption, food_context o nutritional_context. "
-                "No inventes información que el usuario no haya proporcionado. "
-                "Esta herramienta debe ejecutarse antes de responder al usuario."
+                "Resuelve consultas sobre consumo de proteína utilizando "
+                "el contexto nutricional disponible. Úsala cuando el usuario "
+                "pregunte por sus necesidades de proteína, consumo actual, "
+                "cantidad restante o recomendaciones relacionadas. "
+                "Antes de ejecutarla, el contexto nutricional debe haber "
+                "sido actualizado con la información nueva del mensaje, "
+                "si existe. No inventes datos ausentes. Si falta información "
+                "imprescindible para responder de forma fiable, identifica "
+                "qué dato falta y solicita al usuario que lo proporcione."
             ),
-            "parameters": NutritionalContextUpdate.model_json_schema(),
+            "parameters": ProteinQueryRequirements.model_json_schema(),
         },
-    }
+    },
 ]
 
 tool_specs = {
