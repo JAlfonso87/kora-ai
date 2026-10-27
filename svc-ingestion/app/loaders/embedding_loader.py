@@ -1,7 +1,11 @@
 from app._db.pool import pool
 
+
 class EMBLoader():
-    def upload(self, upload_arguments, batch_size=100):
+    def upload(self, upload_arguments, batch_size: int = 100) -> int:
+        if batch_size < 1:
+            raise ValueError("batch_size must be greater than zero.")
+
         print("<< STARTING EMBEDDING UPLOAD PROCESS >>")
         chunks, metadata = upload_arguments['chunks'], upload_arguments['metadata']
 
@@ -61,18 +65,26 @@ class EMBLoader():
                         document_insertion,
                         document_params
                     )
+
                     result = cur.fetchone()
+
+                    if result is None:
+                        raise RuntimeError(
+                            "Document insertion returned no ID.")
+
                     document_id = result[0]
 
                     for start in range(0, len(chunks), batch_size):
-                        chunk_index = 0
                         batch = chunks[start:start + batch_size]
-                        for chunk in batch:
+
+                        for offset, chunk in enumerate(batch):
+                            chunk_index = start + offset + 1
+
                             chunk_params = (
-                               document_id,
-                               chunk_index + 1,
-                               "plain/txt",
-                               chunk['chunk'],
+                                document_id,
+                                chunk_index,
+                                "plain/txt",
+                                chunk['chunk'],
                             )
                             print("<< CHUNK PARAMS >>")
                             print(chunk_params)
@@ -82,10 +94,11 @@ class EMBLoader():
                             )
 
                             result = cur.fetchone()
-                            chunk_id, chunk_index = result
 
-                            if chunk_id is None:
+                            if result is None:
                                 continue
+
+                            chunk_id = result[0]
 
                             embedding_params = (
                                 chunk_id,
