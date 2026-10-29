@@ -1,6 +1,6 @@
-from app.tools.tool_requirements import ProteinQueryRequirements, NutritionalContextUpdate
+from app.tools.tool_requirements import ProteinQueryRequirements, NutritionalContextUpdate,BayesReasoningRequirements
 from app.tools.tool_functions import Tools
-
+from app.bayes import BAYES_TOOL_SCHEMA
 groq_tools = [
     {
         "type": "function",
@@ -38,6 +38,14 @@ groq_tools = [
             "parameters": ProteinQueryRequirements.model_json_schema(),
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": BAYES_TOOL_SCHEMA["name"],
+            "description": BAYES_TOOL_SCHEMA["description"],
+            "parameters": BayesReasoningRequirements.model_json_schema(),
+        },
+    },
 ]
 
 tool_specs = {
@@ -48,5 +56,9 @@ tool_specs = {
     "update_nutritional_context" : {
         "function": Tools.update_nutritional_context,
         "params_model": NutritionalContextUpdate
-    }
+    },
+    "bayes_reasoning": {
+        "function": Tools.bayes_reasoning_query,
+        "params_model": BayesReasoningRequirements,
+    },
 }
