@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 from pathlib import Path
-import json, os, uuid
+import json
+import os
+import uuid
 
 
 from langchain_groq import ChatGroq
@@ -57,11 +59,60 @@ TOOL USAGE:
   unless the required tool has actually been executed.
 - If essential information is missing, explain what is missing
   instead of inventing values.
+- When the user asks about their protein requirements,
+  protein intake, remaining protein needs, or personalized
+  protein recommendations, call protein_assistance_query.
+- Before calling protein_assistance_query, ensure that
+  update_nutritional_context has processed any new nutritional
+  information explicitly provided in the current user message.
+- If the current message contains new or updated nutritional
+  information, call update_nutritional_context before responding.
+- Do not claim to have performed a nutritional calculation
+  unless the required tool has actually been executed.
+- If essential information is missing, explain what is missing
+  instead of inventing values.
+- When the user asks factual questions about nutrition, nutrients,
+  foods, dietary concepts, or scientific information that requires
+  consulting the knowledge base, call rag_query.
+- If the knowledge base returns no relevant information, state
+  that the available sources do not provide sufficient information.
+- Do not use rag_query as a replacement for protein_assistance_query
+  when a personalized protein calculation is required.
 
 RESPONSE:
 - Provide a clear and relevant answer.
 - Respect the available nutritional context and safety restrictions.
 """
+
+RAG_SYSTEM_PROMPT = """
+RAG RESPONSE RESTRICTIONS:
+
+When rag_query has been executed, follow these rules:
+
+1. Use only the information explicitly stated in the
+   document fragments returned by rag_query.
+
+2. Do not add facts, explanations, examples, conclusions,
+   or recommendations based on general knowledge or prior knowledge.
+
+3. Do not infer information that is not explicitly stated
+   in the retrieved fragments.
+
+4. You may paraphrase the retrieved information, but the
+   meaning must remain strictly faithful to the original text.
+
+5. If the retrieved fragments do not contain enough
+   information to answer the question, clearly state
+   that the available documents do not provide sufficient
+   information.
+
+6. Every factual statement in the response must be directly
+   supported by the retrieved fragments.
+
+7. Include a Sources section listing only the sources
+   returned by rag_query. Do not invent or modify sources.
+"""
+
 
 # Builds the conversation prompt using the system instructions,
 # nutritional context, previous history, current user message,
@@ -70,6 +121,7 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
     [
         ("system", SYSTEM_PROMPT),
         ("system", "Current nutritional context:\n{nutritional_context}"),
+        ("system", RAG_SYSTEM_PROMPT),
         MessagesPlaceholder(variable_name="history"),
         ("human", "{message}"),
         MessagesPlaceholder(variable_name="tool_messages"),
@@ -80,6 +132,7 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
 # Creates the LangChain execution pipeline using the prompt template
 # and the LLM with tool-calling support enabled.
 chain = PROMPT_TEMPLATE | llm_with_tools
+
 
 def generate_response(
     message: str,
@@ -93,7 +146,7 @@ def generate_response(
     Returns:
         A tuple containing the LLM response and the session ID used.
     """
-    
+
     if not session_id:
         session_id = str(uuid.uuid4())
 
@@ -124,7 +177,7 @@ def generate_response(
         facts = build_fact_base(nutritional_context)
         print("<< LISTA DE HECHOS RECUPERADOS >>")
         print(facts)
- 
+
     # Retrieves the conversation history.
     history = get_history(session_id)
 
@@ -184,43 +237,56 @@ def generate_response(
             print(" << RESULT RECUPERADO >> ")
             print(result)
 
-            # Saves the nutritional context returned by the tool.
-            print(" << GUARDANDO CONTEXTO >> ")
-            save_context(
-                session_id=session_id,
-                context=result["context"]
-            )
-            print(" << CONTEXTO GUARDADO >> ")
+            # RAG retrieves knowledge without modifying nutritional context.
+            if tool_call["name"] == "rag_query":
+                tool_content = result
 
-            # Transforms the freshly retrieved NutritionalContext into a list of facts that will be subject to rules.
-            facts = build_fact_base(result["context"])
-            print("<< LISTA DE HECHOS RECUPERADOS >>")
-            print(facts)
-            RULES_PATH = (Path(__file__).resolve().parent.parent / "inference_engine" / "rules_catalog.json")
+            else:
+                # Saves the nutritional context returned by the tool.
+                print(" << GUARDANDO CONTEXTO >> ")
+                save_context(
+                    session_id=session_id,
+                    context=result["context"]
+                )
+                print(" << CONTEXTO GUARDADO >> ")
 
-            with open(RULES_PATH, "r", encoding="utf-8") as file:
-                rules_data = json.load(file)
+                # Transforms the freshly retrieved NutritionalContext into a list of facts that will be subject to rules.
+                facts = build_fact_base(result["context"])
+                print("<< LISTA DE HECHOS RECUPERADOS >>")
+                print(facts)
 
-            rules = [
-                Rule.model_validate(data)
-                for data in rules_data["rules"]
-            ]
+                RULES_PATH = (
+                    Path(__file__).resolve().parent.parent
+                    / "inference_engine"
+                    / "rules_catalog.json"
+                )
 
-            rules_result = rule_engine.evaluate(facts, rules)
-            #print("<< REGLAS EVALUADAS: >>")
-            #print(format_evaluation(rules_result, color=False, show_all=False))
+                with open(RULES_PATH, "r", encoding="utf-8") as file:
+                    rules_data = json.load(file)
 
-            # Preserves only rule_messages related to the current tool_execution
-            rule_messages = [evaluation_to_message(rules_result)]
-            print("<< REGLAS EVALUADAS: >>")
-            print(rule_messages)
+                rules = [
+                    Rule.model_validate(data)
+                    for data in rules_data["rules"]
+                ]
+
+                rules_result = rule_engine.evaluate(facts, rules)
+
+                # print("<< REGLAS EVALUADAS: >>")
+                # print(format_evaluation(rules_result, color=False, show_all=False))
+
+                # Preserves only rule_messages related to the current tool_execution
+                rule_messages = [evaluation_to_message(rules_result)]
+                print("<< REGLAS EVALUADAS: >>")
+                print(rule_messages)
+
+                tool_content = result["content"]
 
             # Sends the tool result back to the LLM and associates it
             # with the corresponding tool call through its ID.
             tool_messages.append(
                 ToolMessage(
                     content=json.dumps(
-                        result["content"],
+                        tool_content,
                         ensure_ascii=False
                     ),
                     tool_call_id=tool_call["id"]
