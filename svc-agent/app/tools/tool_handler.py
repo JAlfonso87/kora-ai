@@ -1,5 +1,6 @@
 from app.tools.tool_calls import tool_specs as tools
 
+
 def handle_tool_call(tool_call: dict, context):
     # Retrieves the requested tool name and its already-parsed arguments
     # from the LangChain tool call structure.
@@ -13,6 +14,10 @@ def handle_tool_call(tool_call: dict, context):
     # Validates the tool arguments against the Pydantic requirements model
     # defined for the selected tool.
     params = tool["params_model"].model_validate(arguments)
+
+    # Execute RAG independently from nutritional-context tools.
+    if tool_name == "rag_query":
+        return tool["function"](params.query)
 
     # Executes the corresponding tool function using the current nutritional
     # context and the validated parameters, then returns its result.

@@ -1,5 +1,10 @@
-from app.tools.tool_requirements import ProteinQueryRequirements, NutritionalContextUpdate
+from app.tools.tool_requirements import (
+    ProteinQueryRequirements,
+    NutritionalContextUpdate,
+    RAGQueryRequirements
+)
 from app.tools.tool_functions import Tools
+from app.tools.rag_tool import RAGTool
 
 groq_tools = [
     {
@@ -38,15 +43,34 @@ groq_tools = [
             "parameters": ProteinQueryRequirements.model_json_schema(),
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "rag_query",
+            "description": (
+                "Busca información relevante en la base de conocimiento "
+                "nutricional de Kora AI. Utilízala cuando el usuario "
+                "pregunte por conceptos, evidencia, alimentos, nutrientes "
+                "o información nutricional que requiera consultar las "
+                "fuentes documentales. No inventes fuentes ni afirmes que "
+                "la base contiene información que no fue recuperada."
+            ),
+            "parameters": RAGQueryRequirements.model_json_schema(),
+        },
+    }
 ]
 
 tool_specs = {
-    "protein_assistance_query" : {
+    "protein_assistance_query": {
         "function": Tools.protein_assistance_query,
         "params_model": ProteinQueryRequirements
     },
-    "update_nutritional_context" : {
+    "update_nutritional_context": {
         "function": Tools.update_nutritional_context,
         "params_model": NutritionalContextUpdate
+    },
+    "rag_query": {
+        "function": RAGTool().execute,
+        "params_model": RAGQueryRequirements
     }
 }
