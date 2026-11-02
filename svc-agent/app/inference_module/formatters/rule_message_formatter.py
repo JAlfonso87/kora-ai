@@ -1,7 +1,7 @@
 import json
 from langchain_core.messages import SystemMessage
 
-from app.inference_engine.required_models import (
+from app.inference_module.models.required_models import (
     EvaluationResult,
     TruthValue,
 )

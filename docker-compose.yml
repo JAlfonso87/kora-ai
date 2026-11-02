@@ -46,6 +46,8 @@ services:
       - "8000:8000"
     networks:
       - kora-ai
+    volumes:
+      - hf_cache:/root/.cache/huggingface/hub
 
   svc-ingestion:
     build:
@@ -54,11 +56,9 @@ services:
       - ./svc-ingestion/.env
     ports:
       - "8002:8000"
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - kora-ai
     volumes:
-      #- ./svc-ingestion/app/_ingestion:/app/_ingestion
       - ./svc-ingestion/app:/app/app
       - hf_cache:/root/.cache/huggingface/hub
     depends_on:

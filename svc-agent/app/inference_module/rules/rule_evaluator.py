@@ -2,7 +2,7 @@
 from collections.abc import Mapping
 from typing import Any
 
-from app.inference_engine.required_models import (
+from app.inference_module.models.required_models import (
     Condition,
     ConditionResult,
     EvaluationResult,

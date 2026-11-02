@@ -1,9 +1,8 @@
 from typing import Any
 from pydantic import BaseModel
 
-
 # Function responsible of splitting pre-existing NutritionalContext into a list of facts.
-def build_fact_base(context: BaseModel) -> dict[str, Any]:
+def factorize(context: BaseModel) -> dict[str, Any]:
     facts: dict[str, Any] = {}
 
     def process(value: Any, prefix: str = "") -> None:

@@ -3,7 +3,6 @@ import time
 
 from sentence_transformers import SentenceTransformer
 
-
 class EmbeddingGenerator:
     MODEL_NAME = (
         "sentence-transformers/"

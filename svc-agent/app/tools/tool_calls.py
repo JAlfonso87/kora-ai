@@ -1,3 +1,6 @@
+from app.tools.tool_requirements import ProteinQueryRequirements, NutritionalContextUpdate,BayesReasoningRequirements
+from app.tools.tool_functions import Tools
+from app.bayes import BAYES_TOOL_SCHEMA
 from app.tools.tool_requirements import (
     ProteinQueryRequirements,
     NutritionalContextUpdate,
@@ -46,6 +49,11 @@ groq_tools = [
     {
         "type": "function",
         "function": {
+            "name": BAYES_TOOL_SCHEMA["name"],
+            "description": BAYES_TOOL_SCHEMA["description"],
+            "parameters": BayesReasoningRequirements.model_json_schema(),
+        },
+    },
             "name": "rag_query",
             "description": (
                 "Busca información relevante en la base de conocimiento "
@@ -69,6 +77,11 @@ tool_specs = {
         "function": Tools.update_nutritional_context,
         "params_model": NutritionalContextUpdate
     },
+    "bayes_reasoning": {
+        "function": Tools.bayes_reasoning_query,
+        "params_model": BayesReasoningRequirements,
+    },
+}
     "rag_query": {
         "function": RAGTool().execute,
         "params_model": RAGQueryRequirements

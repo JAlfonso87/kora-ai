@@ -1,5 +1,4 @@
-from app.db.pool import pool
-
+from app.rag_module.db_connection.pool import pool
 
 class SearchDocument:
     def search(
