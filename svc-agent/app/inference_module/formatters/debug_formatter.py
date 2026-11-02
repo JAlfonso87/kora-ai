@@ -2,7 +2,7 @@
 import json
 from typing import Any
 
-from app.inference_engine.required_models import (
+from app.inference_module.models.required_models import (
     EvaluationResult,
     TruthValue,
 )

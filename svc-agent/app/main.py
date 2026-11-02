@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException
 import logging, traceback
 from fastapi.middleware.cors import CORSMiddleware
-from app.models import AgentRequest, AgentResponse
-from app.services.llm_service import generate_response
-from app.services.memory import clear_session
+from app.toolbox_module.models.tool_requirements import AgentRequest, AgentResponse
+from app.llm_module.llm_pipeline import generate_response
+from app.llm_module.memory.memory import clear_session
 
 app = FastAPI(
     title="Kora AI - Agent Service",
@@ -31,7 +31,7 @@ def health_check():
 @app.post("/agent/query", response_model=AgentResponse)
 def query_agent(request: AgentRequest):
     try:
-        
+
         response_text, session_id = generate_response(
             message=request.message,
             session_id=request.session_id,
