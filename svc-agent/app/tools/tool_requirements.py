@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 from typing import Literal,Any
 from app.context_module.nutritional_context_models import UserProfile, Goals, CurrentConsumption, Preferences, Restrictions
 from pydantic import BaseModel, Field, ConfigDict
+
+
 class NutritionalContextUpdate(BaseModel):
     user_profile: UserProfile | None = Field(
         default=None,
@@ -27,6 +29,7 @@ class NutritionalContextUpdate(BaseModel):
         default=None,
         description="New or updated information about the user's food restrictions related to acquirability, personal dislikes or allergies.",
     )
+
 
 class ProteinQueryRequirements(BaseModel):
     user_profile: UserProfile = Field(
@@ -93,4 +96,11 @@ class BayesReasoningRequirements(BaseModel):
             "Optional decision-specific signals explicitly grounded in available context. "
             "Do not repeat or invent profile, intake, goal, or restriction values."
         ),
+    )
+
+
+class RAGQueryRequirements(BaseModel):
+    query: str = Field(
+        min_length=1,
+        description="Question or topic about nutrition for which relevant information must be retrieved from the knowledge base."
     )

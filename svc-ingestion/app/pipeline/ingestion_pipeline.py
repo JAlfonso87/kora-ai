@@ -1,8 +1,13 @@
+import logging
+
 from app.loaders.document_loader import DocumentLoader
 from app.processors.document_processor import DocumentProcessor
 from app.chunkers.document_chunker import DocumentChunker
 from app.embeddings.embedding_generator import EmbeddingGenerator
 from app.loaders.embedding_loader import EMBLoader
+
+logger = logging.getLogger(__name__)
+
 
 class IngestionPipeline:
     def __init__(self):
@@ -17,7 +22,6 @@ class IngestionPipeline:
         print(f"<< STARTING FILE LOADING WITH PATH: {file_path} >>")
         document = self.loader.load(file_path)
         print("<< FILE LOADED SUCCESFULLY >>")
-
 
         # Normalize the extracted text.
         print(f"<< STARTING FILE PROCESSING... >>")
@@ -49,11 +53,12 @@ class IngestionPipeline:
         rfu = {
             "chunks": chunks_with_embedding,
             "metadata": document["metadata"]
-        } # "Ready For Upload"
+        }  # "Ready For Upload"
 
         try:
             self.embedding_loader.upload(rfu)
-        except Exception as e:
-            print(e)
+        except Exception:
+            logger.exception("Failed to persist ingestion data")
+            raise
 
         return rfu

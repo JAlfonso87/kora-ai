@@ -58,8 +58,8 @@ services:
     networks:
       - kora-ai
     volumes:
-      - ./svc-ingestion/app/_ingestion:/app/_ingestion
-      #- ./svc-ingestion/app:/app
+      #- ./svc-ingestion/app/_ingestion:/app/_ingestion
+      - ./svc-ingestion/app:/app/app
       - hf_cache:/root/.cache/huggingface/hub
     depends_on:
       pgvector:

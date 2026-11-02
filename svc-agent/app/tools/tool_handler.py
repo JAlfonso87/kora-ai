@@ -2,6 +2,7 @@ from app.tools.tool_calls import tool_specs
 from app.tools.tool_functions import Tools
 
 
+
 def handle_tool_call(tool_call: dict, context):
     # Get the tool name and arguments from the LLM response.
     tool_name = tool_call["name"]
@@ -30,3 +31,10 @@ def handle_tool_call(tool_call: dict, context):
         "content": result,
         "context": context
     }
+    # Execute RAG independently from nutritional-context tools.
+    if tool_name == "rag_query":
+        return tool["function"](params.query)
+
+    # Executes the corresponding tool function using the current nutritional
+    # context and the validated parameters, then returns its result.
+    return tool["function"](context, params)
