@@ -27,10 +27,12 @@
   const messagesList = document.getElementById("messagesList");
   const errorMessage = document.getElementById("errorMessage");
   const chatContainer = document.getElementById("chatContainer");
+  const recentChats = document.getElementById("recentChats");
 
   if (apiBaseLabel) apiBaseLabel.textContent = AGENT_API_BASE;
 
   let currentSessionId = null;
+  let currentConversationId = null;
   let lastPayload = null;
   let conversation = []; // { role: 'user'|'assistant', content: string }
 
@@ -231,6 +233,35 @@
     showEmpty();
   }
 
+  function renderConversations(conversations) {
+    if (!recentChats) return;
+
+    recentChats.innerHTML = "";
+
+    conversations.forEach((conversationItem) => {
+      const button = document.createElement("button");
+
+      button.type = "button";
+      button.className = "kora-recent-item";
+      button.textContent = conversationItem.title;
+      button.dataset.conversationId = conversationItem.id;
+
+      button.addEventListener("click", () => {
+        currentConversationId = conversationItem.id;
+
+        recentChats
+          .querySelectorAll(".kora-recent-item")
+          .forEach((item) => {
+            item.classList.remove("is-active");
+          });
+          button.classList.add("is-active");
+          console.log("Selected conversation:", currentConversationId);
+      });
+
+      recentChats.appendChild(button);
+    });
+  }
+
   // ---------- API ----------
   async function loadConversations(userId) {
     if (!userId) return [];
@@ -427,7 +458,7 @@ if (btnOpenSidebar && sidebar) {
   if (currentUserId) {
     loadConversations(currentUserId)
       .then((conversations) => {
-        console.log("Stored conversations:", conversations);
+        renderConversations(conversations);
       })
       .catch((error) => {
         console.log("Failed to load conversations:", error);
