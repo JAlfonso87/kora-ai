@@ -169,6 +169,24 @@
     if (stateError) stateError.hidden = true;
   }
 
+  function showHistoryLoading() {
+    if (stateEmpty) stateEmpty.hidden = true;
+    if (messagesList) messagesList.hidden = true;
+    if (stateLoading) stateLoading.hidden = false;
+    if (stateError) stateError.hidden = true;
+  }
+
+  function showHistoryError(message) {
+    if (stateEmpty) stateEmpty.hidden = true;
+    if (messagesList) messagesList.hidden = true;
+    if (stateLoading) stateLoading.hidden = true;
+    if (stateError) stateError.hidden = false;
+
+    if (errorMessage) {
+      errorMessage.textContent = message;
+    }
+  }
+
   function setLoading(isLoading) {
     if (btnSubmit) {
       btnSubmit.disabled = isLoading;
@@ -238,6 +256,15 @@
 
     recentChats.innerHTML = "";
 
+    if (!conversations.length) {
+      const emptyMessage = document.createElement("p");
+      emptyMessage.className = "kora-sidebar__empty";
+      emptyMessage.textContent = "No hay conversaciones disponibles.";
+
+      recentChats.appendChild(emptyMessage);
+      return;
+    }
+
     conversations.forEach((conversationItem) => {
       const button = document.createElement("button");
 
@@ -260,6 +287,8 @@
 
         if (!currentUserId) return;
 
+        showHistoryLoading();
+
         try {
           const history = await loadConversationHistory(
             currentUserId,
@@ -269,6 +298,10 @@
           renderConversationMessages(history.messages || []);
         } catch (error) {
           console.log("Failed to load conversation history:", error);
+
+          showHistoryError(
+            "No se pudo cargar el historial. Verifica que svc-management esté disponible."
+          );
         }
       });
 
@@ -278,6 +311,16 @@
 
   function renderConversationMessages(messages) {
     clearConversation();
+
+    if (!messages.length) {
+      showEmpty();
+
+      if (errorMessage) {
+        errorMessage.textContent = "";
+      }
+
+      return;
+    }
 
     messages.forEach((message) => {
       appendMessage(message.role, message.content);
@@ -518,6 +561,16 @@ if (btnOpenSidebar && sidebar) {
       })
       .catch((error) => {
         console.log("Failed to load conversations:", error);
+
+        if (recentChats) {
+          recentChats.innerHTML = "";
+
+          const errorItem = document.createElement("p");
+          errorItem.className = "kora-sidebar__empty";
+          errorItem.textContent = "No se pudieron cargar las conversaciones.";
+
+          recentChats.appendChild(errorItem);
+        }
       });
   }
   })();
