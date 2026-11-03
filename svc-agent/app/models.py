@@ -1,7 +1,7 @@
 
 from pydantic import BaseModel, field_validator
 
-from app.nutritional_context.nutritional_context_models import (
+from app.context_module.nutritional_context_models import (
     NutritionalContext,
 )
 

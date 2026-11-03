@@ -1,45 +1,89 @@
-from app.tools.tool_requirements import ProteinQueryRequirements, NutritionalContextUpdate
+from app.tools.tool_requirements import ProteinQueryRequirements, NutritionalContextUpdate,BayesReasoningRequirements
 from app.tools.tool_functions import Tools
+from app.bayes import BAYES_TOOL_SCHEMA
+from app.tools.tool_requirements import (
+    ProteinQueryRequirements,
+    NutritionalContextUpdate,
+    RAGQueryRequirements
+)
+from app.tools.tool_functions import Tools
+from app.tools.rag_tool import RAGTool
 
 groq_tools = [
     {
         "type": "function",
         "function": {
-            "name": "protein_assistance_query",
+            "name": "update_nutritional_context",
             "description": (
-                "No debe ejecutarse sin antes intentar actualizar el contexto nutricional mediante la función 'update_nutritional_context'"
-                "El usuario requiere asistencia nutricional referente al consumo de proteína. No inventes datos, si hay algún dato"
-                "que necesites y haga falta para completar la tarea, hazlo saber al usuario directamente guiándolo para entregar dichos"
-                "datos de la forma en que los necesitas y no procedas hasta tener los datos necesarios."
+                "Actualiza el contexto nutricional utilizando exclusivamente "
+                "la información explícita proporcionada por el usuario en "
+                "su mensaje actual. Extrae los datos disponibles para "
+                "NutritionalContext, según lo permita el esquema. "
+                "No inventes ni infieras datos personales no proporcionados. "
+                "Si no hay información nueva relevante, no inventes cambios. "
+                "Utiliza esta herramienta antes de responder cuando el "
+                "mensaje aporte información nutricional nueva o actualice "
+                "datos previos."
             ),
-            "parameters":
-                ProteinQueryRequirements.model_json_schema()
-        } 
+            "parameters": NutritionalContextUpdate.model_json_schema(),
+        },
     },
     {
         "type": "function",
         "function": {
-            "name": "update_nutritional_context",
+            "name": "protein_assistance_query",
             "description": (
-                "Extrae y actualiza el contexto nutricional a partir de la información "
-                "explícitamente proporcionada por el usuario en su mensaje actual. "
-                "Debes identificar cualquier información relevante para user_profile, goals, "
-                "current_consumption, food_context o nutritional_context. "
-                "No inventes información que el usuario no haya proporcionado. "
-                "Esta herramienta debe ejecutarse antes de responder al usuario."
+                "Resuelve consultas sobre consumo de proteína utilizando "
+                "el contexto nutricional disponible. Úsala cuando el usuario "
+                "pregunte por sus necesidades de proteína, consumo actual, "
+                "cantidad restante o recomendaciones relacionadas. "
+                "Antes de ejecutarla, el contexto nutricional debe haber "
+                "sido actualizado con la información nueva del mensaje, "
+                "si existe. No inventes datos ausentes. Si falta información "
+                "imprescindible para responder de forma fiable, identifica "
+                "qué dato falta y solicita al usuario que lo proporcione."
             ),
-            "parameters": NutritionalContextUpdate.model_json_schema(),
+            "parameters": ProteinQueryRequirements.model_json_schema(),
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": BAYES_TOOL_SCHEMA["name"],
+            "description": BAYES_TOOL_SCHEMA["description"],
+            "parameters": BayesReasoningRequirements.model_json_schema(),
+        },
+    },
+            "name": "rag_query",
+            "description": (
+                "Busca información relevante en la base de conocimiento "
+                "nutricional de Kora AI. Utilízala cuando el usuario "
+                "pregunte por conceptos, evidencia, alimentos, nutrientes "
+                "o información nutricional que requiera consultar las "
+                "fuentes documentales. No inventes fuentes ni afirmes que "
+                "la base contiene información que no fue recuperada."
+            ),
+            "parameters": RAGQueryRequirements.model_json_schema(),
         },
     }
 ]
 
 tool_specs = {
-    "protein_assistance_query" : {
+    "protein_assistance_query": {
         "function": Tools.protein_assistance_query,
         "params_model": ProteinQueryRequirements
     },
-    "update_nutritional_context" : {
+    "update_nutritional_context": {
         "function": Tools.update_nutritional_context,
         "params_model": NutritionalContextUpdate
+    },
+    "bayes_reasoning": {
+        "function": Tools.bayes_reasoning_query,
+        "params_model": BayesReasoningRequirements,
+    },
+}
+    "rag_query": {
+        "function": RAGTool().execute,
+        "params_model": RAGQueryRequirements
     }
 }

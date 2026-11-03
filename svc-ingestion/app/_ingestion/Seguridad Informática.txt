@@ -1,0 +1,5 @@
+Seguridad informática
+
+La seguridad informática busca proteger los dispositivos, las redes y la información frente a accesos no autorizados, daños o robos. Algunas amenazas comunes son los correos fraudulentos, los programas maliciosos y las contraseñas débiles.
+
+Para reducir los riesgos, conviene utilizar contraseñas únicas, activar la autenticación multifactor, instalar actualizaciones y realizar copias de seguridad. Antes de abrir un enlace o un archivo adjunto inesperado, es recomendable verificar quién lo envió y comprobar que la solicitud sea legítima.
