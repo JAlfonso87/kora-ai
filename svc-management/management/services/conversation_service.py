@@ -82,3 +82,11 @@ def get_conversation_history(user_id, conversation_id):
 
     return conversation, messages
 
+
+def get_user_conversations(user_id):
+    return Conversation.objects.filter(
+        user_id=user_id,
+    ).order_by(
+        "-updated_at",
+        "-created_at",
+    )
