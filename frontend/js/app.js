@@ -246,7 +246,7 @@
       button.textContent = conversationItem.title;
       button.dataset.conversationId = conversationItem.id;
 
-      button.addEventListener("click", () => {
+      button.addEventListener("click", async () => {
         currentConversationId = conversationItem.id;
 
         recentChats
@@ -254,11 +254,33 @@
           .forEach((item) => {
             item.classList.remove("is-active");
           });
-          button.classList.add("is-active");
-          console.log("Selected conversation:", currentConversationId);
+
+        button.classList.add("is-active");
+        const currentUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
+
+        if (!currentUserId) return;
+
+        try {
+          const history = await loadConversationHistory(
+            currentUserId,
+            currentConversationId
+          );
+
+          renderConversationMessages(history.messages || []);
+        } catch (error) {
+          console.log("Failed to load conversation history:", error);
+        }
       });
 
       recentChats.appendChild(button);
+    });
+  }
+
+  function renderConversationMessages(messages) {
+    clearConversation();
+
+    messages.forEach((message) => {
+      appendMessage(message.role, message.content);
     });
   }
 
@@ -290,6 +312,40 @@
       );
     }
     return Array.isArray(data) ? data : [];
+  }
+
+  async function loadConversationHistory(userId, conversationId) {
+    if (!userId || !conversationId) return null;
+
+    const url =
+      `${CONVERSATIONS_URL}${encodeURIComponent(conversationId)}/history/` +
+      `?user_id=${encodeURIComponent(userId)}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    let data = null;
+
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    if (!res.ok) {
+      const detail =
+        (data && (data.error || data.detail || data.message)) ||
+        `HTTP error ${res.status}`;
+
+        throw new Error(
+          typeof detail === "string" ? detail : JSON.stringify(detail)
+        );
+    }
+
+    return data;
   }
 
   async function sendQuery(payload) {
