@@ -21,6 +21,7 @@ from management.services.conversation_service import (
     create_conversation,
     send_conversation_message,
     get_conversation_history,
+    get_user_conversations,
 )
 
 
@@ -73,8 +74,35 @@ def agent_test(request):
     })
 
 
-@api_view(["POST"])
+@api_view(["GET", "POST"])
 def create_conversation_view(request):
+    if request.method == "GET":
+        user_id = request.query_params.get("user_id")
+
+        if not user_id:
+            return Response(
+                {"error": "El parámetro user_id es obligatorio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user_id = UUIDField().run_validation(user_id)
+        except ValidationError as exc:
+            return Response(
+                {"error": exc.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        conversations = get_user_conversations(user_id)
+
+        return Response(
+            ConversationHistorySerializer(
+                conversations,
+                many=True,
+            ).data,
+            status=status.HTTP_200_OK,
+        )
+
     serializer = ConversationCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
