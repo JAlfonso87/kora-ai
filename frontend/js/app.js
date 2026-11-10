@@ -2,9 +2,15 @@
 (function () {
   "use strict";
 
-  const API_BASE = "http://localhost:8000";
-  const QUERY_URL = `${API_BASE}/agent/query`;
+  const AGENT_API_BASE = "http://localhost:8000";
+  const MANAGEMENT_API_BASE = "http://localhost:8001";
+
+  const USER_ID_STORAGE_KEY = "kora_user_id";
+
+  const QUERY_URL = `${AGENT_API_BASE}/agent/query`;
   const STORAGE_KEY = "kora_nutritional_context";
+
+  const CONVERSATIONS_URL = `${MANAGEMENT_API_BASE}/api/conversations/`;
 
   const form = document.getElementById("queryForm");
   const btnSubmit = document.getElementById("btnSubmit");
@@ -21,10 +27,12 @@
   const messagesList = document.getElementById("messagesList");
   const errorMessage = document.getElementById("errorMessage");
   const chatContainer = document.getElementById("chatContainer");
+  const recentChats = document.getElementById("recentChats");
 
-  if (apiBaseLabel) apiBaseLabel.textContent = API_BASE;
+  if (apiBaseLabel) apiBaseLabel.textContent = AGENT_API_BASE;
 
   let currentSessionId = null;
+  let currentConversationId = null;
   let lastPayload = null;
   let conversation = []; // { role: 'user'|'assistant', content: string }
 
@@ -161,6 +169,24 @@
     if (stateError) stateError.hidden = true;
   }
 
+  function showHistoryLoading() {
+    if (stateEmpty) stateEmpty.hidden = true;
+    if (messagesList) messagesList.hidden = true;
+    if (stateLoading) stateLoading.hidden = false;
+    if (stateError) stateError.hidden = true;
+  }
+
+  function showHistoryError(message) {
+    if (stateEmpty) stateEmpty.hidden = true;
+    if (messagesList) messagesList.hidden = true;
+    if (stateLoading) stateLoading.hidden = true;
+    if (stateError) stateError.hidden = false;
+
+    if (errorMessage) {
+      errorMessage.textContent = message;
+    }
+  }
+
   function setLoading(isLoading) {
     if (btnSubmit) {
       btnSubmit.disabled = isLoading;
@@ -225,7 +251,146 @@
     showEmpty();
   }
 
+  function renderConversations(conversations) {
+    if (!recentChats) return;
+
+    recentChats.innerHTML = "";
+
+    if (!conversations.length) {
+      const emptyMessage = document.createElement("p");
+      emptyMessage.className = "kora-sidebar__empty";
+      emptyMessage.textContent = "No hay conversaciones disponibles.";
+
+      recentChats.appendChild(emptyMessage);
+      return;
+    }
+
+    conversations.forEach((conversationItem) => {
+      const button = document.createElement("button");
+
+      button.type = "button";
+      button.className = "kora-recent-item";
+      button.textContent = conversationItem.title;
+      button.dataset.conversationId = conversationItem.id;
+
+      button.addEventListener("click", async () => {
+        currentConversationId = conversationItem.id;
+
+        recentChats
+          .querySelectorAll(".kora-recent-item")
+          .forEach((item) => {
+            item.classList.remove("is-active");
+          });
+
+        button.classList.add("is-active");
+        const currentUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
+
+        if (!currentUserId) return;
+
+        showHistoryLoading();
+
+        try {
+          const history = await loadConversationHistory(
+            currentUserId,
+            currentConversationId
+          );
+
+          renderConversationMessages(history.messages || []);
+        } catch (error) {
+          console.log("Failed to load conversation history:", error);
+
+          showHistoryError(
+            "No se pudo cargar el historial. Verifica que svc-management esté disponible."
+          );
+        }
+      });
+
+      recentChats.appendChild(button);
+    });
+  }
+
+  function renderConversationMessages(messages) {
+    clearConversation();
+
+    if (!messages.length) {
+      showEmpty();
+
+      if (errorMessage) {
+        errorMessage.textContent = "";
+      }
+
+      return;
+    }
+
+    messages.forEach((message) => {
+      appendMessage(message.role, message.content);
+    });
+  }
+
   // ---------- API ----------
+  async function loadConversations(userId) {
+    if (!userId) return [];
+
+    const url = `${CONVERSATIONS_URL}?user_id=${encodeURIComponent(userId)}`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    let data = null;
+
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    if (!res.ok) {
+      const detail = (data && (data.error || data.detail || data.message)) || `HTTP error ${res.status}`;
+      throw new Error(
+        typeof detail === "string" ? detail : JSON.stringify(detail)
+      );
+    }
+    return Array.isArray(data) ? data : [];
+  }
+
+  async function loadConversationHistory(userId, conversationId) {
+    if (!userId || !conversationId) return null;
+
+    const url =
+      `${CONVERSATIONS_URL}${encodeURIComponent(conversationId)}/history/` +
+      `?user_id=${encodeURIComponent(userId)}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    let data = null;
+
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    if (!res.ok) {
+      const detail =
+        (data && (data.error || data.detail || data.message)) ||
+        `HTTP error ${res.status}`;
+
+        throw new Error(
+          typeof detail === "string" ? detail : JSON.stringify(detail)
+        );
+    }
+
+    return data;
+  }
+
   async function sendQuery(payload) {
     setLoading(true);
     lastPayload = payload;
@@ -269,7 +434,7 @@
     } catch (err) {
       const msg =
         err.name === "TypeError"
-          ? `No se pudo conectar con svc-agente (${API_BASE}). ¿Está en ejecución?`
+          ? `No se pudo conectar con svc-agente (${AGENT_API_BASE}). ¿Está en ejecución?`
           : err.message || "Error desconocido";
       if (errorMessage) errorMessage.textContent = msg;
       if (stateError) stateError.hidden = false;
@@ -313,7 +478,7 @@
       if (!currentSessionId) return;
 
       try {
-        await fetch(`${API_BASE}/agent/memory/${encodeURIComponent(currentSessionId)}`, {
+        await fetch(`${AGENT_API_BASE}/agent/memory/${encodeURIComponent(currentSessionId)}`, {
           method: "DELETE",
         });
       } catch {
@@ -386,4 +551,26 @@ if (btnOpenSidebar && sidebar) {
   loadContextFromStorage();
   updateSessionUI();
   showEmpty();
-})();
+
+  const currentUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
+
+  if (currentUserId) {
+    loadConversations(currentUserId)
+      .then((conversations) => {
+        renderConversations(conversations);
+      })
+      .catch((error) => {
+        console.log("Failed to load conversations:", error);
+
+        if (recentChats) {
+          recentChats.innerHTML = "";
+
+          const errorItem = document.createElement("p");
+          errorItem.className = "kora-sidebar__empty";
+          errorItem.textContent = "No se pudieron cargar las conversaciones.";
+
+          recentChats.appendChild(errorItem);
+        }
+      });
+  }
+  })();

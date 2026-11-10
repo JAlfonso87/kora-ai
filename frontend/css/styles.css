@@ -286,6 +286,12 @@ body.sidebar-collapsed .kora-sidebar {
   gap: 0.15rem;
 }
 
+.kora-sidebar__empty {
+  margin: 0.5rem 0.85rem;
+  color: var(--kora-sidebar-muted);
+  font-size: 0.85rem;
+}
+
 .kora-recent-item {
   display: block;
   width: 100%;
