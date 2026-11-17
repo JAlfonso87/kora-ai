@@ -19,6 +19,7 @@ MAX_IMAGE_PIXELS = 20_000_000
 SUPPORTED_FORMATS = {"JPEG", "PNG"}
 
 IMAGE_DICT = {}
+REQUEST_IMAGE_KEY = "request_image"
 
 class VisionTool:
     def __init__(self, classifier = None):
@@ -84,8 +85,17 @@ class VisionTool:
         except Exception as e:
             print(e)
             return self.raiser(err_msg = "An error occurred during image classification.", err_code = "INFERENCE_ERROR").model_dump()
-
+    
     def load_image_for_analysis(self) -> ArtificialVisionInput:
+        # Preferir la imagen que llegó en la petición HTTP actual
+        if REQUEST_IMAGE_KEY in IMAGE_DICT and IMAGE_DICT[REQUEST_IMAGE_KEY]:
+            image_bytes = IMAGE_DICT[REQUEST_IMAGE_KEY]
+            image_id = self.generate_image_id(image_bytes)
+            return ArtificialVisionInput(
+                image_conversion_status="success",
+                image_conversion_annotations="IMAGE FROM REQUEST SUCCESSFULLY LOADED.",
+                image_id=image_id,
+            )
         file_path = r"app/artificial_vision_module/images/a.png"
         file_extension = Path(file_path).suffix.replace(".","")
 
