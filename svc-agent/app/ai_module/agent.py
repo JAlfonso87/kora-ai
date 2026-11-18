@@ -64,7 +64,7 @@ def generate_response(
     message: str,
     session_id: str | None = None,
     nutritional_context: NutritionalContext | None = None,
-) -> tuple[str, str]:
+) -> tuple[str, str, dict | None]:
     """
     Generates an LLM response using conversation memory,
     nutritional context, and available tools.
@@ -115,6 +115,9 @@ def generate_response(
     # Initializes the mesages generated during rule evaluation.
     rule_messages = []
 
+    # Stores the last result returned by the vision tool.
+    last_vision_result = None
+
     while True:
 
         # Retrieves the latest nutritional context on every iteration,
@@ -143,7 +146,7 @@ def generate_response(
         if not msg.tool_calls:
             assistant_content = msg.content or ""
             add_message(session_id, "assistant", assistant_content)
-            return assistant_content, session_id
+            return assistant_content, session_id, last_vision_result
 
         # Stores the AI message containing the requested tool calls
         # so their results can be linked back to the original calls.
@@ -159,6 +162,18 @@ def generate_response(
                 tool_call=tool_call,
                 context=context
             )
+            
+            # Captures the result returned by the vision tool.
+            if tool_call["name"] == "load_and_analyze_picture":
+
+                vision_content = (
+                    result.get("content")
+                    if isinstance(result, dict)
+                    else result
+                )
+
+            if isinstance(vision_content, dict) and "status" in vision_content:
+                    last_vision_result = vision_content
 
             print(" << RESULT RECUPERADO >> ")
             print(result)
