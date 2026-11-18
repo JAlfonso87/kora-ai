@@ -15,6 +15,9 @@ def handle_tool_call(tool_call: dict, context):
     else:
         params = tool["params_model"].model_validate(arguments)
 
+    if tool_name == "rag_query":
+        return tool["function"](params.query)
+    
     # Execute the requested tool.
     if tool_name == "bayes_reasoning":
         result = BayesTool.bayes_reasoning_query(
@@ -36,9 +39,7 @@ def handle_tool_call(tool_call: dict, context):
         "context": context
     }
     # Execute RAG independently from nutritional-context tools.
-    if tool_name == "rag_query":
-        return tool["function"](params.query)
+
 
     # Executes the corresponding tool function using the current nutritional
     # context and the validated parameters, then returns its result.
-    return tool["function"](context, params)

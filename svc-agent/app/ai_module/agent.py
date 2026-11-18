@@ -78,8 +78,8 @@ def generate_response(
 
     # Retrieves the current context for this session.
     current_context = get_context(session_id)
-    print("<< CURRENT NUTRITIONAL CONTEXT >>")
-    print(current_context.model_dump())
+    # print("<< CURRENT NUTRITIONAL CONTEXT >>")
+    # print(current_context.model_dump())
 
     # Updates the context only when new context is received.
     if nutritional_context is not None:
@@ -101,8 +101,8 @@ def generate_response(
         )
 
         facts = build_fact_base(nutritional_context)
-        print("<< LISTA DE HECHOS RECUPERADOS >>")
-        print(facts)
+        # print("<< LISTA DE HECHOS RECUPERADOS >>")
+        # print(facts)
 
     # Retrieves the conversation history.
     history = get_history(session_id)
@@ -139,8 +139,8 @@ def generate_response(
             }
         )
 
-        print("TOOL CALLS:", msg.tool_calls)
-        print("LLM RESPONSE:", msg.content)
+        # print("TOOL CALLS:", msg.tool_calls)
+        print("AGENT:", msg.content)
 
         # Returns the final response when the LLM does not request any tools.
         if not msg.tool_calls:
@@ -172,8 +172,8 @@ def generate_response(
                     else result
                 )
 
-            if isinstance(vision_content, dict) and "status" in vision_content:
-                    last_vision_result = vision_content
+                if isinstance(vision_content, dict) and "status" in vision_content:
+                        last_vision_result = vision_content
 
             print(" << RESULT RECUPERADO >> ")
             print(result)
@@ -184,17 +184,15 @@ def generate_response(
 
             else:
                 # Saves the nutritional context returned by the tool.
-                print(" << GUARDANDO CONTEXTO >> ")
                 save_context(
                     session_id=session_id,
                     context=result["context"]
                 )
-                print(" << CONTEXTO GUARDADO >> ")
 
                 # Transforms the freshly retrieved NutritionalContext into a list of facts that will be subject to rules.
                 facts = build_fact_base(result["context"])
-                print("<< LISTA DE HECHOS RECUPERADOS >>")
-                print(facts)
+                # print("<< LISTA DE HECHOS RECUPERADOS >>")
+                # print(facts)
 
                 RULES_PATH = (
                     Path(__file__).resolve().parent.parent
@@ -212,13 +210,14 @@ def generate_response(
 
                 rules_result = rule_engine.evaluate(facts, rules)
 
-                """print("<< REGLAS EVALUADAS: >>")
-                print(format_evaluation(rules_result, color=False, show_all=False))"""
+                # print("<< REGLAS EVALUADAS: >>")
+                # print(format_evaluation(rules_result, color=False, show_all=False))
 
                 # Preserves only rule_messages related to the current tool_execution
                 rule_messages = [evaluation_to_message(rules_result)]
-                """print("<< REGLAS EVALUADAS: >>")
-                print(rule_messages)"""
+
+                # print("<< REGLAS EVALUADAS: >>")
+                # print(rule_messages)
 
                 tool_content = result["content"]
 
