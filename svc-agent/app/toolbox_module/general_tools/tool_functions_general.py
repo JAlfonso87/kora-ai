@@ -26,12 +26,7 @@ class Tools():
         if update.food_restrictions is not None:
             context.food_restrictions = update.food_restrictions
 
-        return {
-            "content": {
-                "success": True,
-            },
-            "context": context
-        }
+        return context
 
     def protein_assistance_query(
         context: NutritionalContext,

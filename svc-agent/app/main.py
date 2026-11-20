@@ -7,7 +7,7 @@ import uuid
 
 from app.models import AgentResponse
 
-from app.ai_module.agents.general.agent import GeneralAgent
+from app.ai_module.agents.general.general_agent import GeneralAgent
 from app.ai_module.memory_manager.memory import Memory
 from app.ai_module.memory_manager.memory_tester import MemoryTester
 
@@ -57,9 +57,11 @@ async def query_agent(message: str = Form(...),
     ):
         
     try:
-
         if not general_memory.session_id:
             general_memory.session_id = session_id
+
+        if not general_agent.session_id:
+            general_agent.session_id = str(uuid.uuid4())
 
         if not general_agent.memory:
             general_agent.memory = general_memory
@@ -73,26 +75,12 @@ async def query_agent(message: str = Form(...),
             if image_bytes:
                 IMAGE_DICT[REQUEST_IMAGE_KEY] = image_bytes
 
-        # 3. Parsear contexto nutricional (viene como string JSON)
-        ctx = None
-        if nutritional_context and nutritional_context.strip():
-            try:
-                ctx = NutritionalContext.model_validate(
-                    json.loads(nutritional_context)
-                )
-            except Exception:
-                ctx = None
-
         # 4. Llamar al agente (sin cambiar su firma)
-        response_text, new_session_id, vision_result = general_agent.generate_response(
-            message=message,
-            session_id=session_id or None,
-            nutritional_context=ctx,
-        )
+        response_text, vision_result = general_agent.generate_response(message)
 
         return AgentResponse(
             response=response_text,
-            session_id=new_session_id,
+            session_id=general_agent.session_id,
             vision_result=vision_result,
         )
 
