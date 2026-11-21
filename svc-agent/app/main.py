@@ -1,9 +1,14 @@
-from fastapi import FastAPI, HTTPException
-import logging, traceback
+from fastapi import FastAPI, HTTPException, Form, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from app.models import AgentRequest, AgentResponse
-from app.services.llm_service import generate_response
-from app.services.memory import clear_session
+import json
+import logging
+import traceback
+
+from app.models import AgentResponse
+from app.ai_module.agent import generate_response
+from app.ai_module.memory_manager.memory import clear_session
+from app.context_module.nutritional_profile.models import NutritionalContext
+from app.toolbox_module.vision_tools.tool_functions_vision import IMAGE_DICT
 
 app = FastAPI(
     title="Kora AI - Agent Service",
@@ -14,11 +19,16 @@ logger = logging.getLogger(__name__)
 # ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5500"],
+    allow_origins=[
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+REQUEST_IMAGE_KEY = "request_image"
 
 
 @app.get("/")
@@ -29,19 +39,44 @@ def health_check():
 
 
 @app.post("/agent/query", response_model=AgentResponse)
-def query_agent(request: AgentRequest):
-    try:
+async def query_agent(message: str = Form(...),
+    session_id: str = Form(""),
+    nutritional_context: str = Form(""),
+    image: UploadFile | None = File(None),
+    ):
         
-        response_text, session_id = generate_response(
-            message=request.message,
-            session_id=request.session_id,
-            nutritional_context=request.nutritional_context,
-        )
+    try:
 
+        # 1. Limpiar imagen anterior de esta "ranura"
+        IMAGE_DICT.pop(REQUEST_IMAGE_KEY, None)
+
+        # 2. Si viene imagen, guardarla en IMAGE_DICT
+        if image is not None and image.filename:
+            image_bytes = await image.read()
+            if image_bytes:
+                IMAGE_DICT[REQUEST_IMAGE_KEY] = image_bytes
+
+        # 3. Parsear contexto nutricional (viene como string JSON)
+        ctx = None
+        if nutritional_context and nutritional_context.strip():
+            try:
+                ctx = NutritionalContext.model_validate(
+                    json.loads(nutritional_context)
+                )
+            except Exception:
+                ctx = None
+
+        # 4. Llamar al agente (sin cambiar su firma)
+        response_text, new_session_id, vision_result = generate_response(
+            message=message,
+            session_id=session_id or None,
+            nutritional_context=ctx,
+        )
 
         return AgentResponse(
             response=response_text,
-            session_id=session_id,
+            session_id=new_session_id,
+            vision_result=vision_result,
         )
 
     except ValueError as exc:

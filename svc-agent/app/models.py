@@ -1,7 +1,7 @@
 
 from pydantic import BaseModel, field_validator
-
-from app.context_module.nutritional_context_models import (
+from typing import Any
+from app.context_module.nutritional_profile.models import (
     NutritionalContext,
 )
 
@@ -23,3 +23,4 @@ class AgentRequest(BaseModel):
 class AgentResponse(BaseModel):
     response: str
     session_id: str | None = None
+    vision_result: dict[str, Any] | None = None

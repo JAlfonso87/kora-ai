@@ -1,6 +1,3 @@
-/* ===================================================================
- * KORA AI — Chat interface (ChatGPT / agent style)
- * =================================================================== */
 
 :root {
   --kora-orange: #e85d04;
@@ -61,7 +58,7 @@ body.kora-app {
   align-items: center;
   justify-content: space-between;
   padding: 0 1rem 0 calc(var(--sidebar-width) + 1rem);
-  background: var(--kora-red);
+  background: var(--kora-orange-dark);
   border-bottom: 1px solid var(--kora-border);
   transition: padding 0.25s ease;
 }
@@ -1081,4 +1078,202 @@ body.sidebar-collapsed .kora-main {
 
 .kora-sidebar__section::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.15);
+}
+.kora-context-panel {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.kora-context-panel[hidden] {
+  display: none !important;
+}
+
+.kora-context-panel .kora-context-card {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+/* ========== IMAGE PREVIEW ========== */
+.kora-image-preview {
+  max-width: 768px;
+  margin: 0 auto 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.kora-image-preview[hidden] {
+  display: none !important;
+}
+
+.kora-image-preview__card {
+  position: relative;
+  display: inline-block;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--kora-border);
+  background: #fff;
+  box-shadow: var(--kora-shadow);
+}
+
+.kora-image-preview__card img {
+  display: block;
+  max-height: 140px;
+  max-width: 220px;
+  object-fit: cover;
+}
+
+.kora-image-preview__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.kora-image-preview__remove:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+/* Ajuste del botón + */
+.kora-composer__btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.kora-composer__btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--kora-text);
+}
+
+.kora-composer__btn.has-image {
+  color: var(--kora-orange);
+}
+/* ---------- User message with attached image ---------- */
+.kora-msg__image {
+  margin-bottom: 0.5rem;
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 240px;
+  border: 1px solid var(--kora-border);
+  background: #f3f4f6;
+}
+
+.kora-msg__image img {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+}
+
+.kora-msg__text {
+  /* inherits from bubble */
+}
+
+/* ---------- Vision results card (HU-019-T04) ---------- */
+.kora-vision-card {
+  background: #fafafa;
+  border: 1px solid var(--kora-border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.75rem;
+  max-width: 420px;
+}
+
+.kora-vision-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.kora-vision-card__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--kora-text);
+}
+
+.kora-vision-card__status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.kora-vision-card__status--ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.kora-vision-card__status--warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.kora-vision-card__status--error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.kora-vision-card__message {
+  margin: 0 0 0.6rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.kora-vision-card__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kora-vision-card__list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+}
+
+.kora-vision-card__list li:last-child {
+  border-bottom: none;
+}
+
+.kora-vision-card__score {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.kora-vision-card__note {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+.kora-vision-card__empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
 }
