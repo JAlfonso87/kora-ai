@@ -3,11 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import logging
 import traceback
+import uuid
 
 from app.models import AgentResponse
-from app.ai_module.agent import generate_response
-from app.ai_module.memory_manager.memory import clear_session
+
+from app.ai_module.agents.general.general_agent import GeneralAgent
+from app.ai_module.memory_manager.memory import Memory
+from app.ai_module.memory_manager.memory_tester import MemoryTester
+
 from app.context_module.nutritional_profile.models import NutritionalContext
+
 from app.toolbox_module.vision_tools.tool_functions_vision import IMAGE_DICT
 
 app = FastAPI(
@@ -30,6 +35,8 @@ app.add_middleware(
 
 REQUEST_IMAGE_KEY = "request_image"
 
+general_memory = Memory()
+general_agent = GeneralAgent()
 
 @app.get("/")
 def health_check():
@@ -37,6 +44,10 @@ def health_check():
         "message": "Kora AI Agent Service is running"
     }
 
+@app.get("/tests/memory")
+async def test_memory():
+    MemoryTester(str(uuid.uuid4())).start_test()
+    return { "message": "RUNNING TESTS. CHECK SERVER CONSOLE FOR RESULTS."}
 
 @app.post("/agent/query", response_model=AgentResponse)
 async def query_agent(message: str = Form(...),
@@ -46,6 +57,14 @@ async def query_agent(message: str = Form(...),
     ):
         
     try:
+        if not general_memory.session_id:
+            general_memory.session_id = session_id
+
+        if not general_agent.session_id:
+            general_agent.session_id = str(uuid.uuid4())
+
+        if not general_agent.memory:
+            general_agent.memory = general_memory
 
         # 1. Limpiar imagen anterior de esta "ranura"
         IMAGE_DICT.pop(REQUEST_IMAGE_KEY, None)
@@ -56,26 +75,12 @@ async def query_agent(message: str = Form(...),
             if image_bytes:
                 IMAGE_DICT[REQUEST_IMAGE_KEY] = image_bytes
 
-        # 3. Parsear contexto nutricional (viene como string JSON)
-        ctx = None
-        if nutritional_context and nutritional_context.strip():
-            try:
-                ctx = NutritionalContext.model_validate(
-                    json.loads(nutritional_context)
-                )
-            except Exception:
-                ctx = None
-
         # 4. Llamar al agente (sin cambiar su firma)
-        response_text, new_session_id, vision_result = generate_response(
-            message=message,
-            session_id=session_id or None,
-            nutritional_context=ctx,
-        )
+        response_text, vision_result = general_agent.generate_response(message)
 
         return AgentResponse(
             response=response_text,
-            session_id=new_session_id,
+            session_id=general_agent.session_id,
             vision_result=vision_result,
         )
 
@@ -118,8 +123,12 @@ async def query_agent(message: str = Form(...),
 @app.delete("/agent/memory/{session_id}")
 def reset_memory(session_id: str):
     """Borra el historial de una sesión (útil para pruebas)."""
-    clear_session(session_id)
-
-    return {
-        "message": f"Memory for session '{session_id}' cleared"
-    }
+    if not general_memory.session_id:
+        error = {
+            "message": f"Could not clear history for session '{session_id}'.",
+            "err_code": "INEXIXSTENT_MEMORY_INSTANCE"
+        }
+        return error
+    else: 
+        general_memory.clear_session()
+        return { "message": f"Memory for session '{session_id}' has been cleared successfully." }
