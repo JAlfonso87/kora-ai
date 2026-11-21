@@ -30,6 +30,74 @@
     let lastPayload = null;
     let lastImage = null;
     let conversation = [];
+  "use strict";
+
+  const AGENT_API_BASE = "http://localhost:8000";
+  const MANAGEMENT_API_BASE = "http://localhost:8001";
+
+  const USER_ID_STORAGE_KEY = "kora_user_id";
+
+  const QUERY_URL = `${AGENT_API_BASE}/agent/query`;
+  const STORAGE_KEY = "kora_nutritional_context";
+
+  const CONVERSATIONS_URL = `${MANAGEMENT_API_BASE}/api/conversations/`;
+
+  const form = document.getElementById("queryForm");
+  const btnSubmit = document.getElementById("btnSubmit");
+  const btnClearSession = document.getElementById("btnClearSession");
+  const btnRetry = document.getElementById("btnRetry");
+  const btnNewChat = document.getElementById("btnNewChat");
+  const sessionBadge = document.getElementById("sessionBadge");
+  const apiBaseLabel = document.getElementById("apiBaseLabel");
+  const messageInput = document.getElementById("message");
+
+  const stateEmpty = document.getElementById("stateEmpty");
+  const stateLoading = document.getElementById("stateLoading");
+  const stateError = document.getElementById("stateError");
+  const messagesList = document.getElementById("messagesList");
+  const errorMessage = document.getElementById("errorMessage");
+  const chatContainer = document.getElementById("chatContainer");
+  const recentChats = document.getElementById("recentChats");
+
+  if (apiBaseLabel) apiBaseLabel.textContent = AGENT_API_BASE;
+
+  let currentSessionId = null;
+  let currentConversationId = null;
+  let lastPayload = null;
+  let conversation = []; // { role: 'user'|'assistant', content: string }
+
+  // ---------- helpers ----------
+  function parseList(value) {
+    if (!value || !value.trim()) return [];
+    return value.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+
+  function numOrNull(value) {
+    if (value === "" || value === null || value === undefined) return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  function numOrZero(value) {
+    if (value === "" || value === null || value === undefined) return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  }
+
+  function loadContextFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = data[id] ?? "";
+      });
+    } catch (_) {}
+  }
+
+  function buildPayload() {
+    loadContextFromStorage();
 
     function parseList(value) {
         if (!value || !value.trim()) return [];
@@ -243,6 +311,62 @@
         if (messagesList) messagesList.hidden = false;
         if (stateLoading) stateLoading.hidden = true;
         if (stateError) stateError.hidden = true;
+    const contextParts = {
+      user_profile,
+      goals,
+      current_consumption,
+      remaining_nutrients,
+      preferences,
+      restrictions,
+    };
+    const hasContext = Object.values(contextParts).some((v) => v !== null);
+    const nutritional_context = hasContext ? contextParts : null;
+
+    return {
+      message,
+      session_id: currentSessionId || null,
+      nutritional_context,
+    };
+    
+  }
+
+  // ---------- UI states ----------
+  function showEmpty() {
+    if (stateEmpty) stateEmpty.hidden = false;
+    if (messagesList) messagesList.hidden = true;
+    if (stateLoading) stateLoading.hidden = true;
+    if (stateError) stateError.hidden = true;
+  }
+
+  function showChat() {
+    if (stateEmpty) stateEmpty.hidden = true;
+    if (messagesList) messagesList.hidden = false;
+    if (stateLoading) stateLoading.hidden = true;
+    if (stateError) stateError.hidden = true;
+  }
+
+  function showHistoryLoading() {
+    if (stateEmpty) stateEmpty.hidden = true;
+    if (messagesList) messagesList.hidden = true;
+    if (stateLoading) stateLoading.hidden = false;
+    if (stateError) stateError.hidden = true;
+  }
+
+  function showHistoryError(message) {
+    if (stateEmpty) stateEmpty.hidden = true;
+    if (messagesList) messagesList.hidden = true;
+    if (stateLoading) stateLoading.hidden = true;
+    if (stateError) stateError.hidden = false;
+
+    if (errorMessage) {
+      errorMessage.textContent = message;
+    }
+  }
+
+  function setLoading(isLoading) {
+    if (btnSubmit) {
+      btnSubmit.disabled = isLoading;
+      btnSubmit.classList.toggle("is-loading", isLoading);
     }
 
     function setLoading(isLoading) {
@@ -455,6 +579,203 @@
         }
 
         showEmpty();
+  function clearConversation() {
+    conversation = [];
+    if (messagesList) messagesList.innerHTML = "";
+    showEmpty();
+  }
+
+  function renderConversations(conversations) {
+    if (!recentChats) return;
+
+    recentChats.innerHTML = "";
+
+    if (!conversations.length) {
+      const emptyMessage = document.createElement("p");
+      emptyMessage.className = "kora-sidebar__empty";
+      emptyMessage.textContent = "No hay conversaciones disponibles.";
+
+      recentChats.appendChild(emptyMessage);
+      return;
+    }
+
+    conversations.forEach((conversationItem) => {
+      const button = document.createElement("button");
+
+      button.type = "button";
+      button.className = "kora-recent-item";
+      button.textContent = conversationItem.title;
+      button.dataset.conversationId = conversationItem.id;
+
+      button.addEventListener("click", async () => {
+        currentConversationId = conversationItem.id;
+
+        recentChats
+          .querySelectorAll(".kora-recent-item")
+          .forEach((item) => {
+            item.classList.remove("is-active");
+          });
+
+        button.classList.add("is-active");
+        const currentUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
+
+        if (!currentUserId) return;
+
+        showHistoryLoading();
+
+        try {
+          const history = await loadConversationHistory(
+            currentUserId,
+            currentConversationId
+          );
+
+          renderConversationMessages(history.messages || []);
+        } catch (error) {
+          console.log("Failed to load conversation history:", error);
+
+          showHistoryError(
+            "No se pudo cargar el historial. Verifica que svc-management esté disponible."
+          );
+        }
+      });
+
+      recentChats.appendChild(button);
+    });
+  }
+
+  function renderConversationMessages(messages) {
+    clearConversation();
+
+    if (!messages.length) {
+      showEmpty();
+
+      if (errorMessage) {
+        errorMessage.textContent = "";
+      }
+
+      return;
+    }
+
+    messages.forEach((message) => {
+      appendMessage(message.role, message.content);
+    });
+  }
+
+  // ---------- API ----------
+  async function loadConversations(userId) {
+    if (!userId) return [];
+
+    const url = `${CONVERSATIONS_URL}?user_id=${encodeURIComponent(userId)}`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    let data = null;
+
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    if (!res.ok) {
+      const detail = (data && (data.error || data.detail || data.message)) || `HTTP error ${res.status}`;
+      throw new Error(
+        typeof detail === "string" ? detail : JSON.stringify(detail)
+      );
+    }
+    return Array.isArray(data) ? data : [];
+  }
+
+  async function loadConversationHistory(userId, conversationId) {
+    if (!userId || !conversationId) return null;
+
+    const url =
+      `${CONVERSATIONS_URL}${encodeURIComponent(conversationId)}/history/` +
+      `?user_id=${encodeURIComponent(userId)}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    let data = null;
+
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    if (!res.ok) {
+      const detail =
+        (data && (data.error || data.detail || data.message)) ||
+        `HTTP error ${res.status}`;
+
+        throw new Error(
+          typeof detail === "string" ? detail : JSON.stringify(detail)
+        );
+    }
+
+    return data;
+  }
+
+  async function sendQuery(payload) {
+    setLoading(true);
+    lastPayload = payload;
+
+    // show user message immediately
+    appendMessage("user", payload.message);
+    messageInput.value = "";
+    autoResize();
+
+    try {
+      const res = await fetch(QUERY_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        /* empty */
+      }
+
+      if (!res.ok) {
+        const detail =
+          (data && (data.detail || data.message)) ||
+          `Error HTTP ${res.status}`;
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+      }
+
+      const text = data.response ?? "";
+      if (data.session_id) {
+        currentSessionId = data.session_id;
+        updateSessionUI();
+      }
+
+      appendMessage("assistant", text);
+    } catch (err) {
+      const msg =
+        err.name === "TypeError"
+          ? `No se pudo conectar con svc-agente (${AGENT_API_BASE}). ¿Está en ejecución?`
+          : err.message || "Error desconocido";
+      if (errorMessage) errorMessage.textContent = msg;
+      if (stateError) stateError.hidden = false;
+      // keep the user message visible
+      showChat();
+    } finally {
+      setLoading(false);
     }
 
     /*
@@ -720,3 +1041,49 @@
     showEmpty();
 
 })();
+  }
+
+// sidebar collapse
+const btnCollapse = document.getElementById("btnCollapseSidebar");
+const btnOpenSidebar = document.getElementById("btnOpenSidebar");
+const sidebar = document.getElementById("sidebar");
+
+if (btnCollapse && sidebar) {
+  btnCollapse.addEventListener("click", () => {
+    document.body.classList.add("sidebar-collapsed");
+  });
+}
+
+if (btnOpenSidebar && sidebar) {
+  btnOpenSidebar.addEventListener("click", () => {
+    document.body.classList.remove("sidebar-collapsed");
+  });
+}
+
+  // init
+  loadContextFromStorage();
+  updateSessionUI();
+  showEmpty();
+
+  const currentUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
+
+  if (currentUserId) {
+    loadConversations(currentUserId)
+      .then((conversations) => {
+        renderConversations(conversations);
+      })
+      .catch((error) => {
+        console.log("Failed to load conversations:", error);
+
+        if (recentChats) {
+          recentChats.innerHTML = "";
+
+          const errorItem = document.createElement("p");
+          errorItem.className = "kora-sidebar__empty";
+          errorItem.textContent = "No se pudieron cargar las conversaciones.";
+
+          recentChats.appendChild(errorItem);
+        }
+      });
+  }
+  })();
