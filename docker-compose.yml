@@ -27,6 +27,7 @@ services:
     networks:
       - kora-ai
 
+  
   svc-management:
     build:
       context: ./svc-management
@@ -34,6 +35,8 @@ services:
       - ./svc-management/.env
     ports:
       - "8001:8000"
+    depends_on:
+      - svc-agent
     networks:
       - kora-ai
 
@@ -44,8 +47,12 @@ services:
       - ./svc-agent/.env
     ports:
       - "8000:8000"
+    depends_on:
+      pgvector:
+        condition: service_healthy
     networks:
       - kora-ai
+
 
   svc-ingestion:
     build:
