@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kora AI</title>
+  <title>kORA-AI </title>
   <link rel="stylesheet" href="css/styles.css">
 
   <link rel="icon" type="image/png" sizes="32x32" href="images/k.svg">
@@ -227,16 +227,22 @@
         <form id="loginForm" class="login-form" novalidate>
           <div class="login-field">
             <label for="loginEmail" class="login-field__label">Email</label>
-            <input type="email" id="loginEmail" name="email" class="login-field__input" autocomplete="email" />
+            <input type="email" id="loginEmail" name="email" class="login-field__input" autocomplete="email" placeholder="prueba.kora@example.com" required />
           </div>
           <div class="login-field">
             <label for="loginPassword" class="login-field__label">Contraseña</label>
-            <input type="password" id="loginPassword" name="password" class="login-field__input" autocomplete="current-password" />
+            <input type="password" id="loginPassword" name="password" class="login-field__input" autocomplete="current-password" required />
           </div>
+          <div class="login-field">
+            <label for="loginUserId" class="login-field__label">User ID (UUID)</label>
+            <input type="text" id="loginUserId" name="user_id" class="login-field__input" autocomplete="off" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" spellcheck="false" />
+            <p class="login-field__hint">ID del usuario en la base de datos (salida de create_test_data.py). Obligatorio mientras no exista API de autenticación.</p>
+          </div>
+          <p id="loginError" class="login-error" hidden></p>
           <div class="login-form__forgot">
             <a href="#" class="login-link">Olvidé mi contraseña</a>
           </div>
-          <button type="button" class="login-btn login-btn--primary">
+          <button type="submit" id="loginSubmitBtn" class="login-btn login-btn--primary">
             Ingresar
           </button>
           <p class="login-form__footer">

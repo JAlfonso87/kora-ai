@@ -1277,3 +1277,31 @@ body.sidebar-collapsed .kora-main {
   font-size: 0.875rem;
   color: #6b7280;
 }
+
+
+/* Login helpers (auth integration) */
+.login-error {
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.login-error[hidden] {
+  display: none;
+}
+
+.login-field__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+.kora-btn.is-logged-in {
+  border-color: #16a34a;
+  color: #166534;
+}
