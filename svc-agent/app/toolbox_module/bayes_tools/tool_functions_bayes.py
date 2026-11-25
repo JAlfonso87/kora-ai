@@ -7,7 +7,7 @@ ANTES de devolver la decisión final y pueden forzar safety_block.
 """
 from __future__ import annotations
 
-from app.toolbox_module.tool_input_models import BayesReasoningRequirements
+from app.toolbox_module.general_tools.models.input_models_general import BayesReasoningRequirements
 from app.context_module.nutritional_profile.models import NutritionalContext
 
 from typing import Any, Dict, List, Optional, Union

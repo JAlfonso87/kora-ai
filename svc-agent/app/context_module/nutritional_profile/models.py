@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Literal
 
-
 class UserProfile(BaseModel):
     age: int | None = Field(
         default=None,
@@ -22,7 +21,9 @@ class UserProfile(BaseModel):
         gt=0,
         description="User's height expressed in centimeters.",
     )
-
+    activity_level: Literal["sedentary", "low", "moderate", "active"] | None = Field(
+        description="User's general activity level."
+    )
 
 class Goals(BaseModel):
     primary_goal: Literal["weight_loss", "muscle_gain", "maintenance"] | None = Field(
@@ -39,40 +40,67 @@ class Goals(BaseModel):
         gt=0,
         description="User's protein target expressed in grams.",
     )
+    fats_target_g: float | None = Field(
+        default=None,
+        gt=0,
+        description="User's fat target expressed in grams.",
+    )
+    carbohydrates_target_g: float | None = Field(
+        default=None,
+        gt=0,
+        description="User's carbohydrate target expressed in grams.",
+    )
 
 
 class CurrentConsumption(BaseModel):
     calories_kcal: float | None = Field(
         default=None,
-        gt=0,
+        ge=0,
         description="Calories consumed by the current moment expressed in kilocalories.",
     )
     protein_g: float | None = Field(
         default=None,
-        gt=0,
+        ge=0,
         description="Protein consumed by the current moment expressed in grams.",
     )
-
+    fats_g: float | None = Field(
+        default=None,
+        ge=0,
+        description="Fat consumed by the current moment expressed in grams.",
+    )
+    carbohydrates_g: float | None = Field(
+        default=None,
+        ge=0,
+        description="Carbohydrates consumed by the current moment expressed in grams.",
+    )
 
 class RemainingNutrients(BaseModel):
     calories_kcal: float | None = Field(
         default=None,
-        gt=0,
+        ge=0,
         description="Calories left to reach calorie goal expressed in kilocalories.",
     )
     protein_g: float | None = Field(
         default=None,
-        gt=0,
+        ge=0,
         description="Protein left to reach protein goal expressed in grams.",
     )
-
+    fats_g: float | None = Field(
+        default=None,
+        ge=0,
+        description="Fat left to reach fat goal expressed in grams.",
+    )
+    carbohydrates_g: float | None = Field(
+        default=None,
+        ge=0,
+        description="Carbohydrates left to reach carbohydrate goal expressed in grams.",
+    )
 
 class Preferences(BaseModel):
     preferred_foods: list[str] = Field(
         default_factory=list,
         description="List including all of user's preferred foods.",
     )
-
 
 class Restrictions(BaseModel):
     avoided_foods: list[str] = Field(

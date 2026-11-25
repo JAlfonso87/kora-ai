@@ -1,41 +1,62 @@
 from typing import Literal
 from pydantic import BaseModel, Field
 
-
-class FoodEvaluationContext(BaseModel):
-    food_name: str = Field(
-        description="Generic name of the current food."
+class NutritionalValues(BaseModel):
+    calories_kcal: float = Field(
+        description = "Calories per 100g of ingredient expressed in kcal",
+        ge=0
+    )
+    protein_g: float = Field(
+        description = "Protein per 100g of ingredient expressed in grams.",
+        ge=0
+    )
+    carbohydrates_g: float = Field(
+        description = "Carbohydrates per 100 grams of ingredient expressed in grams.",
+        ge=0
+    )
+    fats_g: float = Field(
+        description = "Fats per 100 grams of ingredient expressed in grams.",
+        ge=0
     )
 
-    quantity_g: float | None = Field(
-        description="Estimated quantity of the current food expressed in grams.",
-        default=None,
-        gt=0,
+class Ingredient(BaseModel):
+    name: str = Field(
+        description = "Ingredient's name"
+    )
+    quantity_g: float = Field(
+        description = "Ingredient's quantity expressed in grams.",
+        gt = 0
+    )
+    nutrients_per_100g: NutritionalValues = Field(
+        description = "Nutritional values per 100 grams of ingredient."
     )
 
-    calories_kcal: float | None = Field(
-        description="Estimated calorie intake based on food quantity, expressed in kilocalories.",
-        default=None,
-        ge=0,
+class Food(BaseModel):
+    name: str = Field(
+        description = "Food's name"
+    )
+    classification: Literal["regular", "processed"] = Field(
+        description = "Classification of the food's origins. Being 'regular' the proper classification for proper foods like homemade ones," \
+        "and 'processed' being the proper classification for foods like packaged snacks, desserts, and others."
+    )
+    ingredients: list[Ingredient] = Field(
+        description = "List of the food's ingredients."
+    )
+    brand: str | None = Field(
+        default = None,
+        description = "Food's brand."
+    )
+    
+class Meal(BaseModel):
+    name: str = Field(
+        description = "Common name of the whole meal given by the user (may vary)"
+    )
+    involved_foods: list[Food] = Field(
+        description = "List of foods that form part of the whole meal."
     )
 
-    protein_g: float | None = Field(
-        description="Estimated protein intake based on food quantity, expressed in grams.",
-        default=None,
-        ge=0,
+class FoodContext(BaseModel):
+    meals: list[Meal] = Field(
+        default = [],
+        description = "List of today's meals registered by the user."
     )
-
-    ingredients: list[str] | None = Field(
-        description="If it's a composite food (involves ingredients) lists every single ingredient involved in its elaboration.",
-        default=None,
-    )
-    allergens: list[str] | None = Field(
-        description="If it's a composite food (involves ingredients) lists every possible allergen involved in its elaboration.",
-        default=None,
-    )
-
-    data_source: Literal[
-        "llm_estimate",
-        "user_provided",
-        "unknown",
-    ] = "unknown"

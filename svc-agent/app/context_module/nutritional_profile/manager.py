@@ -1,6 +1,6 @@
 from app.context_module.nutritional_profile.models import NutritionalContext
 
-class ContextManager:
+class NutritionalContextManager:
     def __init__(self):
         self.contexts: dict[str, NutritionalContext] = {}
 

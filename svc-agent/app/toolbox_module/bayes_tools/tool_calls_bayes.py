@@ -1,4 +1,4 @@
-from app.toolbox_module.tool_input_models import BayesReasoningRequirements
+from app.toolbox_module.general_tools.models.input_models_general import BayesReasoningRequirements
 from app.toolbox_module.bayes_tools.tool_functions_bayes import BayesTool
 
 tools_probabilistic = [
