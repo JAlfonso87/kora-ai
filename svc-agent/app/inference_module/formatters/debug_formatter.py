@@ -2,7 +2,7 @@
 import json
 from typing import Any
 
-from app.toolbox_module.tool_input_models import (
+from app.toolbox_module.general_tools.models.input_models_general import (
     EvaluationResult,
     TruthValue,
 )

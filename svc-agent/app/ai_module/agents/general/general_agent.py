@@ -1,39 +1,45 @@
 from dotenv import load_dotenv
 from pathlib import Path
 import json
+import uuid
 
 from langchain_core.messages import ToolMessage
 
 from app.ai_module.memory_manager.memory import Memory
 from app.ai_module.agents.general.preloader import ModelPreloader
 
-from app.toolbox_module.tool_handler import handle_tool_call
-
-from app.context_module.nutritional_profile.manager import ContextManager
-from app.context_module.nutritional_profile.models import NutritionalContext
+from app.context_module.nutritional_profile.manager import NutritionalContextManager
 from app.context_module.nutritional_profile.enforcer import context_enforcer
+
+from app.context_module.food_profile.manager import FoodContextManager
+from app.context_module.food_profile.enforcer import food_context_enforcer
 
 from app.inference_module.generators.fact_generator import build_fact_base
 from app.inference_module.evaluators.rule_evaluator import RuleEngine
-from app.toolbox_module.tool_input_models import Rule
+from app.toolbox_module.general_tools.models.input_models_general import Rule
 from app.inference_module.formatters.debug_formatter import format_evaluation
 from app.inference_module.formatters.rule_message_formatter import evaluation_to_message
+
+from app.ai_module.agents.planner.planner_agent import PlannerAgent
+from app.toolbox_module.general_tools.tool_handler_general import ToolHandler
 
 # Loads environment variables from the local .env file.
 load_dotenv()
 
 class GeneralAgent:
-    def __init__(self, memory: Memory = None, session_id: str | None = None):
-        self.session_id = session_id
+    def __init__(self):
+        self.session_id = str(uuid.uuid4())
         self.model = ModelPreloader().chain
-        self.memory = memory
-        self.context_manager = ContextManager()
-        self.rule_engine = RuleEngine()
+        self.memory = Memory(self.session_id)
 
-    @property
-    def context(self) -> NutritionalContext:
-        if self.session_id is not None:
-            return self.context_manager.get_context(self.session_id)
+        self.nutritional_context_manager = NutritionalContextManager()
+        self.nutritional_context = self.nutritional_context_manager.get_context(self.session_id)
+
+        self.food_context_manager = FoodContextManager()
+        self.food_context = self.food_context_manager.get_context(self.session_id)
+
+        self.tool_handler = ToolHandler(self.nutritional_context, PlannerAgent(self.session_id, self.nutritional_context, self.food_context))
+        self.rule_engine = RuleEngine()
     
     def generate_response(
         self,
@@ -47,7 +53,7 @@ class GeneralAgent:
             A tuple containing the LLM response and the session ID used.
         """
 
-        facts = build_fact_base(self.context)
+        facts = build_fact_base(self.nutritional_context)
         # print("<< LISTA DE HECHOS RECUPERADOS >>")
         # print(facts)
 
@@ -64,20 +70,23 @@ class GeneralAgent:
 
         while True:
 
-            context_enforcer(self.context_manager, self.session_id, self.memory.get_last_messages())
+            context_enforcer(self.nutritional_context_manager, self.session_id, self.memory.get_last_messages())
+            print("CURRENT CONTEXTS: ")
+            print("NUTRITIONAL CONTEXT: ")
+            print(self.nutritional_context)
+            print("FOOD CONTEXT: ")
+            print(self.food_context)
 
             # Generates the LLM response using the current context,
             # conversation history, and tool execution history.
-            msg = self.model.invoke(
-                {
-                    "message": message,
-                    "nutritional_context": self.context,
-                    "history": self.memory.get_history(),
-                    "tool_messages": tool_messages,
-                    "rule_messages": rule_messages
-                }
-            )
 
+            msg = self.model.invoke({
+                "message": message,
+                "nutritional_context": self.nutritional_context,
+                "history": self.memory.get_history(),
+                "tool_messages": tool_messages,
+                "rule_messages": rule_messages
+            })
             print("AGENT:", msg.content)
 
             # Returns the final response when the LLM does not request any tools.
@@ -95,11 +104,29 @@ class GeneralAgent:
 
                 # Executes the requested application tool using
                 # the current nutritional context.
-                result = handle_tool_call(
-                    tool_call = tool_call,
-                    context = self.context
-                )
-                
+                result = self.tool_handler.handle(tool_call = tool_call, contextual_messages = self.memory.get_last_messages())
+
+                if tool_call["name"] == "delegate_to_planner_agent":
+                    for message in result["content"]:
+                        tool_messages.append(
+                            ToolMessage(
+                                content=json.dumps(
+                                    message.model_dump(),
+                                    ensure_ascii=False
+                                ),
+                                tool_call_id=tool_call["id"]
+                            )
+                        )
+                        match message.action:
+                            case "REGISTERED_NEW_MEAL":
+                                food_context_enforcer(self.food_context_manager, self.session_id, [message.model_dump()])
+                            case "CALCULATED_CURRENT_CONSUMPTION":
+                                context_enforcer(self.nutritional_context_manager, self.session_id, [message.model_dump()], consumption_update = True)
+                            case "REGISTERED_NUTRITIONAL_GOALS" | "CALCULATE_REMAINING_NUTRIENTS":
+                                context_enforcer(self.nutritional_context_manager, self.session_id, [message.model_dump()], goal_update = True)
+
+                    continue
+
                 # Captures the result returned by the vision tool.
                 if tool_call["name"] == "load_and_analyze_picture":
 
@@ -121,16 +148,16 @@ class GeneralAgent:
 
                 else:
                     # Saves the nutritional context returned by the tool.
-                    self.context_manager.save_context(
+                    self.nutritional_context_manager.save_context(
                         session_id = self.session_id,
-                        context = result["context"]
+                        context = self.nutritional_context
                     )
 
                     # Transforms the freshly retrieved NutritionalContext into a list of facts that will be subject to rules.
                     facts = build_fact_base(result["context"])
 
                     RULES_PATH = (
-                        Path(__file__).resolve().parent.parent
+                        Path(__file__).resolve().parent.parent.parent.parent
                         / "inference_module"
                         / "rules_catalog.json"
                     )

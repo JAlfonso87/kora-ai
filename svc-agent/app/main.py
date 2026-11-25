@@ -35,7 +35,6 @@ app.add_middleware(
 
 REQUEST_IMAGE_KEY = "request_image"
 
-general_memory = Memory()
 general_agent = GeneralAgent()
 
 @app.get("/")
@@ -57,15 +56,6 @@ async def query_agent(message: str = Form(...),
     ):
         
     try:
-        if not general_memory.session_id:
-            general_memory.session_id = session_id
-
-        if not general_agent.session_id:
-            general_agent.session_id = str(uuid.uuid4())
-
-        if not general_agent.memory:
-            general_agent.memory = general_memory
-
         # 1. Limpiar imagen anterior de esta "ranura"
         IMAGE_DICT.pop(REQUEST_IMAGE_KEY, None)
 
@@ -119,10 +109,10 @@ async def query_agent(message: str = Form(...),
                 f"Traceback:\n{traceback.format_exc()}"
             ),
         ) from exc
-    
+
+"""
 @app.delete("/agent/memory/{session_id}")
 def reset_memory(session_id: str):
-    """Borra el historial de una sesión (útil para pruebas)."""
     if not general_memory.session_id:
         error = {
             "message": f"Could not clear history for session '{session_id}'.",
@@ -132,3 +122,4 @@ def reset_memory(session_id: str):
     else: 
         general_memory.clear_session()
         return { "message": f"Memory for session '{session_id}' has been cleared successfully." }
+"""

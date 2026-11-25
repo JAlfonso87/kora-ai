@@ -7,8 +7,8 @@ import uuid
 from app.artificial_vision_module.food_classifier.food_classifier import FoodClassifier
 from app.context_module.nutritional_profile.models import NutritionalContext
 
-from app.toolbox_module.tool_input_models import ArtificialVisionInput, ImageTemplate
-from app.toolbox_module.tool_output_models import (
+from app.toolbox_module.general_tools.models.input_models_general import ArtificialVisionInput, ImageTemplate
+from app.toolbox_module.general_tools.models.output_models_general import (
     VisionPrediction,
     VisionToolResult,
 )

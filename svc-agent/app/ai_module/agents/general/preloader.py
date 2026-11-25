@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from app.ai_module.agents.general.prompt import SYSTEM_PROMPT, RAG_SYSTEM_PROMPT
 
-from app.toolbox_module import TOOLPACK
+from app.toolbox_module.general_tools.tool_pack_general import TOOLPACK
 
 PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
     [

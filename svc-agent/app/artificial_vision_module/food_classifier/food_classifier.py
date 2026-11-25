@@ -7,7 +7,7 @@ from transformers import (
     ViTImageProcessor,
 )
 
-from app.toolbox_module.tool_output_models import FoodClassificationResult
+from app.toolbox_module.general_tools.models.output_models_general import FoodClassificationResult
 from app.artificial_vision_module.food_classifier._config import VIT_MODEL_ID, CLASSIFIER_PATH
 
 class FoodClassifier:

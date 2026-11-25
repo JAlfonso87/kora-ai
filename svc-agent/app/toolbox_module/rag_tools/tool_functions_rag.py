@@ -1,6 +1,6 @@
 from app.rag_module.database.search_document import SearchDocument
 from app.rag_module.embeddings.embedding_generator import EmbeddingGenerator
-from app.toolbox_module.tool_input_models import RAGQueryRequirements
+from app.toolbox_module.general_tools.models.input_models_general import RAGQueryRequirements
 
 class RAGTool:
     def __init__(

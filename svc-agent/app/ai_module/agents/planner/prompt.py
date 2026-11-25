@@ -177,11 +177,9 @@ SYSTEM_PROMPT = """
 
     If the user requests modifications, preserve all existing constraints unless explicitly instructed otherwise.
 
-    ## 9. Final Directive
+    **Return the results of the executed tools without any changes, in JSON format. Do not add follow up messages to the response.**
 
-    Your responsibility is to transform `NutritionalContext` into a coherent, personalized, nutritionally balanced, and actionable nutritional plan.
+    **In case of calling multiple tools, make sure that the content of your response matches with the content of the last tool called.**
 
-    Always prioritize the user's nutritional objectives, contextual constraints, and safety.
-
-    **The quality of your output must be measured by its nutritional consistency, personalization, practicality, and adherence to the information provided by KoraAI.**
+    **Make sure that the last tool called matches the action requested by the user irectly or indirectly**
 """
