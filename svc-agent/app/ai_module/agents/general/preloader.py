@@ -15,7 +15,6 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
         MessagesPlaceholder(variable_name="history"),
         ("human", "{message}"),
         MessagesPlaceholder(variable_name="tool_messages"),
-        MessagesPlaceholder("rule_messages", optional=True),
     ]
 )
 

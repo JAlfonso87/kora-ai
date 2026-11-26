@@ -9,7 +9,7 @@ class ToolHandlerPlanner:
         self.food_context = food_context
 
     def handle(self, tool_call: dict):
-        print(f"EXECUTING PLANNER TOOL '{tool_call["name"]}' WITH ARGUMENTS: {[tool_call["args"]]}")
+        print(f"(PLANNER TOOL HANDLER): EXECUTING PLANNER TOOL '{tool_call["name"]}' WITH ARGUMENTS: {[tool_call["args"]]}")
 
         tool_name = tool_call["name"]
         arguments = tool_call["args"]

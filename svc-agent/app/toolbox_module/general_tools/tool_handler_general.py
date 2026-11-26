@@ -11,7 +11,7 @@ class ToolHandler:
     def handle(self, tool_call: dict, contextual_messages: list):
         # Get the tool name and arguments from the LLM response.
 
-        print(f"EXECUTING GENERAL TOOL '{tool_call["name"]}' WITH ARGUMENTS: {[tool_call["args"]]}")
+        print(f"(GENERAL TOOL HANDLER): EXECUTING GENERAL TOOL '{tool_call["name"]}' WITH ARGUMENTS: {[tool_call["args"]]}")
 
         tool_name = tool_call["name"]
         arguments = tool_call["args"]
@@ -38,10 +38,6 @@ class ToolHandler:
                 result = tool["function"](self.nutritional_context, params) if params is not None else tool["function"](self.nutritional_context)
         
         payload["content"] = result
-
-        # Return the standard response structure.
-        #if isinstance(result, dict) and "content" in result and "context" in result:
-        #    return result
 
         print(f"\nfunction: 'general_handler' ")
         print(f"returning: {payload}")

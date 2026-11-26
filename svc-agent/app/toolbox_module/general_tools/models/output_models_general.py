@@ -1,6 +1,14 @@
 from typing import Literal
 from pydantic import BaseModel, Field
 
+class SubAgentToolResponse(BaseModel):
+    action: str = Field(
+        description = "Action executed successfully by tool"
+    ),
+    content: dict = Field(
+        description = "Final structured result from the sub-agent execution."
+    )
+    
 """ -- ARTIFICIAL VISION TOOLS -- """
 
 class VisionPrediction(BaseModel):

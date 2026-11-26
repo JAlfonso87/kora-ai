@@ -15,7 +15,6 @@ from app.context_module.food_profile.manager import FoodContextManager
 from app.context_module.food_profile.enforcer import food_context_enforcer
 
 from app.inference_module.generators.fact_generator import build_fact_base
-from app.inference_module.evaluators.rule_evaluator import RuleEngine
 from app.toolbox_module.general_tools.models.input_models_general import Rule
 from app.inference_module.formatters.debug_formatter import format_evaluation
 from app.inference_module.formatters.rule_message_formatter import evaluation_to_message
@@ -39,7 +38,6 @@ class GeneralAgent:
         self.food_context = self.food_context_manager.get_context(self.session_id)
 
         self.tool_handler = ToolHandler(self.nutritional_context, PlannerAgent(self.session_id, self.nutritional_context, self.food_context))
-        self.rule_engine = RuleEngine()
     
     def generate_response(
         self,
@@ -52,10 +50,6 @@ class GeneralAgent:
         Returns:
             A tuple containing the LLM response and the session ID used.
         """
-
-        facts = build_fact_base(self.nutritional_context)
-        # print("<< LISTA DE HECHOS RECUPERADOS >>")
-        # print(facts)
 
         # Stores the current user message.
         self.memory.add_message("user", message)
@@ -71,11 +65,6 @@ class GeneralAgent:
         while True:
 
             context_enforcer(self.nutritional_context_manager, self.session_id, self.memory.get_last_messages())
-            print("CURRENT CONTEXTS: ")
-            print("NUTRITIONAL CONTEXT: ")
-            print(self.nutritional_context)
-            print("FOOD CONTEXT: ")
-            print(self.food_context)
 
             # Generates the LLM response using the current context,
             # conversation history, and tool execution history.
@@ -85,7 +74,6 @@ class GeneralAgent:
                 "nutritional_context": self.nutritional_context,
                 "history": self.memory.get_history(),
                 "tool_messages": tool_messages,
-                "rule_messages": rule_messages
             })
             print("AGENT:", msg.content)
 
@@ -139,9 +127,6 @@ class GeneralAgent:
                     if isinstance(vision_content, dict) and "status" in vision_content:
                         last_vision_result = vision_content
 
-                print(" << RESULT RECUPERADO >> ")
-                print(result)
-
                 # RAG retrieves knowledge without modifying nutritional context.
                 if tool_call["name"] == "rag_query":
                     tool_content = result
@@ -152,28 +137,6 @@ class GeneralAgent:
                         session_id = self.session_id,
                         context = self.nutritional_context
                     )
-
-                    # Transforms the freshly retrieved NutritionalContext into a list of facts that will be subject to rules.
-                    facts = build_fact_base(result["context"])
-
-                    RULES_PATH = (
-                        Path(__file__).resolve().parent.parent.parent.parent
-                        / "inference_module"
-                        / "rules_catalog.json"
-                    )
-
-                    with open(RULES_PATH, "r", encoding="utf-8") as file:
-                        rules_data = json.load(file)
-
-                    rules = [
-                        Rule.model_validate(data)
-                        for data in rules_data["rules"]
-                    ]
-
-                    rules_result = self.rule_engine.evaluate(facts, rules)
-
-                    # Preserves only rule_messages related to the current tool_execution
-                    rule_messages = [evaluation_to_message(rules_result)]
 
                     tool_content = result["content"]
 

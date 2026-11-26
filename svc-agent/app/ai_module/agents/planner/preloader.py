@@ -10,6 +10,7 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
     [
         ("system", SYSTEM_PROMPT),
         MessagesPlaceholder(variable_name="contextual_messages"),
+        MessagesPlaceholder("rule_messages", optional=True),
         ("system", "El NutritionalContext actual es: {context}"),
         ("human", "Tienes la siguiente instrucción: {query}")
     ]
