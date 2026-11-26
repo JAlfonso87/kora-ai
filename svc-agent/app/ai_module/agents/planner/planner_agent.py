@@ -41,6 +41,15 @@ class PlannerAgent:
             for tool_call in response.tool_calls:
                 result = SubAgentToolResponse(**self.tool_handler.handle(tool_call = tool_call))
                 rule_messages = self.rule_engine.get_evaluation_results()
+
+                if tool_call["name"] == "rag_query":
+                    return [
+                        SubAgentToolResponse({
+                        "action": "RAG_QUERY",
+                        "content": result["content"]
+                        })
+                    ]
+                
                 tool_messages.append(result)
 
             return tool_messages

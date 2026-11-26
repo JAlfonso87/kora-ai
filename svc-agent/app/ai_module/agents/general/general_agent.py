@@ -56,8 +56,6 @@ class GeneralAgent:
 
         # Initializes the messages used during tool execution.
         tool_messages = []
-        # Initializes the mesages generated during rule evaluation.
-        rule_messages = []
 
         # Stores the last result returned by the vision tool.
         last_vision_result = None
@@ -127,18 +125,13 @@ class GeneralAgent:
                     if isinstance(vision_content, dict) and "status" in vision_content:
                         last_vision_result = vision_content
 
-                # RAG retrieves knowledge without modifying nutritional context.
-                if tool_call["name"] == "rag_query":
-                    tool_content = result
+                # Saves the nutritional context returned by the tool.
+                self.nutritional_context_manager.save_context(
+                    session_id = self.session_id,
+                    context = self.nutritional_context
+                )
 
-                else:
-                    # Saves the nutritional context returned by the tool.
-                    self.nutritional_context_manager.save_context(
-                        session_id = self.session_id,
-                        context = self.nutritional_context
-                    )
-
-                    tool_content = result["content"]
+                tool_content = result["content"]
 
                 # Sends the tool result back to the LLM and associates it
                 # with the corresponding tool call through its ID.
