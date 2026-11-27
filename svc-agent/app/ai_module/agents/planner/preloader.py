@@ -3,13 +3,15 @@ import os
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
-from app.ai_module.agents.planner.prompt import SYSTEM_PROMPT
+from app.ai_module.agents.planner.prompt import SYSTEM_PROMPT, RAG_SYSTEM_PROMPT
 from app.toolbox_module.planner_tools.tool_pack_planner import TOOLPACK_PLANNER
 
 PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
     [
         ("system", SYSTEM_PROMPT),
+        ("system", RAG_SYSTEM_PROMPT),
         MessagesPlaceholder(variable_name="contextual_messages"),
+        MessagesPlaceholder("rule_messages", optional=True),
         ("system", "El NutritionalContext actual es: {context}"),
         ("human", "Tienes la siguiente instrucción: {query}")
     ]

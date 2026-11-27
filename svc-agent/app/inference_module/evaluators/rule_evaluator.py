@@ -1,4 +1,5 @@
-
+import json
+from pathlib import Path
 from collections.abc import Mapping
 from typing import Any
 
@@ -11,6 +12,13 @@ from app.toolbox_module.general_tools.models.input_models_general import (
     TruthValue,
 )
 
+from app.context_module.food_profile.models import FoodContext
+from app.context_module.nutritional_profile.models import NutritionalContext
+
+from app.inference_module.generators.fact_generator import build_fact_base
+from app.inference_module.formatters.rule_message_formatter import evaluation_to_message
+
+from langchain_core.messages import SystemMessage
 
 def _as_items(value: Any) -> list[Any] | None:
     """Return collection items without treating strings as collections."""
@@ -91,6 +99,14 @@ def _compare(actual: Any, operator: str, expected: Any) -> bool:
 
 
 class RuleEngine:
+    def __init__(self, session_id: str, nutritional_context: NutritionalContext, food_context: FoodContext):
+        self.session_id = session_id,
+        self.nutritional_context = nutritional_context,
+        self.food_context = food_context
+        self.rules_path = Path(__file__).resolve().parent.parent/"rules_catalog.json"
+        self.facts = build_fact_base(self.nutritional_context)
+        self.rules= None
+
     def evaluate_condition(
         self,
         condition: Condition,
@@ -310,3 +326,21 @@ class RuleEngine:
                 for fact in result.missing_facts
             }),
         )
+
+    def get_evaluation_results(self) -> list[SystemMessage]:
+        self.facts = build_fact_base(self.nutritional_context)
+
+        if self.rules is None:
+            with open(self.rules_path, "r", encoding="utf-8") as file:
+                rules_data = json.load(file)
+
+            self.rules = [
+                Rule.model_validate(data)
+                for data in rules_data["rules"]
+            ]
+
+        rule_eval_result: EvaluationResult = self.evaluate(self.facts, self.rules)
+
+        rule_eval_messages: list[SystemMessage] = [evaluation_to_message(rule_eval_result)]
+
+        return rule_eval_messages

@@ -3,30 +3,8 @@ from app.context_module.nutritional_profile.models import NutritionalContext
 from app.context_module.food_profile.models import FoodContext
 
 from app.ai_module.agents.planner.planner_agent import PlannerAgent
-from app.ai_module.agents.available_queries import PlannerAvailableQueries
-from pydantic import BaseModel, Field
 
-class SubAgentToolRequest(BaseModel):
-    message: str = Field(
-        description = "User's message that triggered the activation of the sub-agent."
-    )
-    contextual_messages: str = Field(
-        description = "Brief list of previous messages before tool call to give simple context."
-    )
-    nutritional_context: str = Field(
-        description = "User's nutritional context."
-    )
-    query: PlannerAvailableQueries = Field(
-        description = "Simple instruction given by the main agent to the sub-agent."
-    )
-
-class SubAgentToolResponse(BaseModel):
-    action: str = Field(
-        description = "Action executed successfully by tool"
-    ),
-    content: dict = Field(
-        description = "Final structured result from the sub-agent execution."
-    )
+from app.toolbox_module.general_tools.models.output_models_general import SubAgentToolResponse
 
 class Tools():
     def update_nutritional_context(
@@ -83,26 +61,23 @@ class Tools():
 
         return context
 
-    def delegate_to_planner_agent(planner_agent: PlannerAgent, nutritional_context: NutritionalContext, contextual_messages: list, args: PlannerQuery) -> list[SubAgentToolResponse]:
-        tool_messages: list[SubAgentToolResponse] = []
-
-        msg = planner_agent.model.invoke({
+    def delegate_to_planner_agent(
+            planner_agent: PlannerAgent, 
+            nutritional_context: NutritionalContext, 
+            contextual_messages: list, 
+            args: PlannerQuery
+        ) -> list[SubAgentToolResponse]:
+        
+        result = planner_agent.invoke({
             "contextual_messages": contextual_messages,
             "context": nutritional_context,
             "query": args.query
         })
 
-        if not msg.tool_calls:
-            return tool_messages
-        
-        for tool_call in msg.tool_calls:
-            result = SubAgentToolResponse(**planner_agent.tool_handler.handle(tool_call = tool_call))
-            tool_messages.append(result)
-
         print(f"\nfunction: 'delegate_to_planner_agent' ")
-        print(f"returning: {tool_messages}")
+        print(f"returning: {result}")
         
-        return tool_messages
+        return result
         
 
     

@@ -11,6 +11,20 @@ from app.ai_module.agents.available_queries import PlannerAvailableQueries
 
 """ -- GENERAL TOOLS -- """
 
+class SubAgentToolRequest(BaseModel):
+    message: str = Field(
+        description = "User's message that triggered the activation of the sub-agent."
+    )
+    contextual_messages: str = Field(
+        description = "Brief list of previous messages before tool call to give simple context."
+    )
+    nutritional_context: str = Field(
+        description = "User's nutritional context."
+    )
+    query: PlannerAvailableQueries = Field(
+        description = "Simple instruction given by the main agent to the sub-agent."
+    )
+    
 class NutritionalContextUpdate(BaseModel):
     user_profile: UserProfile | None = Field(
         default=None,
